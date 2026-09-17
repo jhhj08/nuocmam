@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAU MUỐNG - Character Realm</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        lavender: {
+                            light: '#e9d5ff',
+                            DEFAULT: '#b57edc',
+                            glow: '#c084fc',
+                            dark: '#7e22ce'
+                        },
+                        night: {
+                            bg: '#08060f',
+                            card: '#120d22',
+                            border: '#291c47',
+                            hover: '#1a1333'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        title: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #08060f;
+            color: #f1f5f9;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        #fxCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .text-glow {
+            text-shadow: 0 0 16px rgba(181, 126, 220, 0.65);
+        }
+
+        .card-custom {
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-custom:hover {
+            transform: translateY(-3px);
+            border-color: rgba(181, 126, 220, 0.65);
+            box-shadow: 0 10px 30px -5px rgba(181, 126, 220, 0.35);
+        }
+
+        /* Quay đĩa nhạc */
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin-music { animation: spinSlow 5s linear infinite; }
+        .spin-paused { animation-play-state: paused; }
+
+        /* Animation thông báo trượt lên */
+        @keyframes slideUpAnnouncement {
+            0% { opacity: 0; transform: translateY(80px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-slide-up { animation: slideUpAnnouncement 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Hoa oải hương trôi */
+        @keyframes floatPetal {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-120px) rotate(360deg); opacity: 0; }
+        }
+        .notice-petal {
+            position: absolute;
+            color: #b57edc;
+            animation: floatPetal 3.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* Chữ chạy chúc mừng sinh nhật (Marquee) */
+        @keyframes marqueeScroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .marquee-track {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marqueeScroll 18s linear infinite;
+        }
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+
+        /* Hiệu ứng bong bóng nụ hôn nảy nảy (Kiss Bubble) */
+        @keyframes kissBounceAnim {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+            }
+            30% {
+                transform: translate(-50%, calc(-50% - 25px)) scale(1.3) rotate(-10deg);
+            }
+            60% {
+                transform: translate(-50%, calc(-50% - 50px)) scale(1) rotate(10deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, calc(-50% - 95px)) scale(1.4) rotate(0deg);
+            }
+        }
+        .kiss-bubble {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999999;
+            animation: kissBounceAnim 0.85s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            font-size: 22px;
+            filter: drop-shadow(0 0 8px rgba(244, 114, 182, 0.9));
+        }
+
+        /* Cảm ứng chạm hạt tuyết */
+        .touch-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999999;
+            animation: touchFly 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            transform: translate(-50%, -50%);
+            will-change: transform, opacity;
+        }
+        @keyframes touchFly {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.6) rotate(0deg); }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.2) rotate(var(--tr)); }
+        }
+
+        .touch-ripple {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999998;
+            border-radius: 50%;
+            border: 2px solid rgba(192, 132, 252, 0.8);
+            transform: translate(-50%, -50%) scale(0.1);
+            animation: rippleExpand 0.5s ease-out forwards;
+            box-shadow: 0 0 12px rgba(181, 126, 220, 0.8);
+        }
+        @keyframes rippleExpand {
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+        }
+
+        .tag-scrollbar::-webkit-scrollbar { height: 4px; }
+        .tag-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .tag-scrollbar::-webkit-scrollbar-thumb { background: #2f1f52; border-radius: 4px; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #08060f; }
+        ::-webkit-scrollbar-thumb { background: #2f1f52; border-radius: 4px; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col relative">
+
+    <!-- Canvas Tuyết & Cánh hoa Lavender rơi nhẹ -->
+    <canvas id="fxCanvas"></canvas>
+
+    <!-- Trình phát Audio HTML5 -->
+    <audio id="htmlAudioPlayer" class="hidden" loop preload="auto"></audio>
+    <audio id="charPlotAudioPlayer" class="hidden" loop preload="auto"></audio>
+    <div id="ytWrapper" class="hidden"><div id="ytAudioContainer"></div></div>
+
+    <!-- THANH VINH DANH CHẠY CHỮ CHÚC MỪNG SINH NHẬT (NẾU ĐẾN NGÀY) -->
+    <div id="birthdayMarqueeBar" class="hidden bg-gradient-to-r from-pink-900/90 via-purple-800/90 to-pink-900/90 border-b border-pink-400/50 py-1.5 px-4 text-xs font-bold text-amber-200 overflow-hidden sticky top-0 z-50 shadow-lg backdrop-blur-md">
+        <div class="marquee-track flex items-center gap-4">
+            <span id="birthdayMarqueeText">🎂 CHÚC MỪNG SINH NHẬT! 🌸</span>
+            <span>✨ Chúc bạn có một ngày sinh nhật thật ấm áp, ngọt ngào cùng RAU MUỐNG! 💖</span>
+            <span id="birthdayMarqueeText2">🎉 Sinh nhật vui vẻ! 👑</span>
+        </div>
+    </div>
+
+    <!-- KHUNG WEB CĂN GIỮA (MAX-W-5XL) -->
+    <div class="w-full max-w-5xl mx-auto flex flex-col min-h-screen relative z-20 px-3 sm:px-6">
+
+        <!-- Header Navigation -->
+        <header class="border-b border-night-border/80 backdrop-blur-md bg-night-bg/85 sticky top-0 z-40 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-lavender-dark to-lavender flex items-center justify-center shadow-lg shadow-purple-900/50">
+                    <i class="fa-solid fa-seedling text-white text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-title text-xl font-extrabold tracking-widest text-white leading-none">RAU MUỐNG</h1>
+                    <p class="text-[9px] text-lavender-light uppercase tracking-widest mt-0.5">Character Realm</p>
+                </div>
+            </div>
+
+            <!-- Header Actions: Facebook, Bảng Xếp Hạng, Gửi thư, User Badge & Admin -->
+            <div class="flex items-center space-x-2">
+                <!-- Nút Facebook Admin -->
+                <a href="https://www.facebook.com/share/19ppv8AKJZ/" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#1877F2]/20 hover:bg-[#1877F2] border border-[#1877F2]/40 text-blue-300 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-brands fa-facebook text-sm"></i>
+                    <span class="hidden md:inline">FB Admin</span>
+                </a>
+
+                <!-- Nút Bảng Xếp Hạng -->
+                <button onclick="openLeaderboardModal()" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/20 hover:bg-amber-500 border border-amber-400/40 text-amber-300 hover:text-black transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
+                    <span class="hidden sm:inline">BXH</span>
+                </button>
+
+                <!-- Nút Gửi Thư Admin -->
+                <button onclick="openMailboxModal()" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-night-card border border-lavender/40 hover:border-lavender text-lavender-light hover:text-white transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-envelope-open-text text-lavender"></i>
+                    <span class="hidden sm:inline">Gửi Thư</span>
+                </button>
+
+                <!-- User Badge sau khi đăng nhập thành công -->
+                <div id="userHeaderBadge" class="hidden items-center gap-2 bg-night-card border border-night-border px-2.5 py-1.5 rounded-xl text-xs">
+                    <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-lavender-dark to-lavender flex items-center justify-center text-white font-bold text-[10px]" id="userAvatarText">
+                        U
+                    </div>
+                    <div class="flex flex-col text-left">
+                        <span class="font-bold text-white text-[11px] leading-tight" id="userDisplayName">User</span>
+                        <span class="text-[9px] text-lavender-light" id="userAgeBadge">18 tuổi</span>
+                    </div>
+                    <button onclick="logoutUser()" title="Đăng xuất" class="ml-1 text-slate-400 hover:text-red-400 text-xs p-1">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+
+                <button onclick="openAdminPortal()" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-night-card border border-lavender/40 hover:border-lavender text-lavender-light hover:text-white transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-lock text-lavender"></i>
+                    <span>Admin 🔐</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Tiêu đề & Lọc Tag ngang -->
+        <section class="pt-6 pb-3 text-center">
+            <span class="inline-block px-3 py-0.5 rounded-full text-[11px] font-semibold bg-lavender/15 border border-lavender/35 text-lavender-light mb-2">
+                ❄️ Thế Giới Nhân Vật • RAU MUỐNG 🌸
+            </span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-white font-title tracking-wide text-glow">
+                Bộ Sưu Tập Nhân Vật
+            </h2>
+            <p class="mt-1 text-slate-400 text-xs sm:text-sm max-w-xl mx-auto">
+                Khám phá cốt truyện, bấm lướt xem ảnh, thả tim và trao nụ hôn "chụt chụt" cho nhân vật.
+            </p>
+
+            <!-- Ô tìm kiếm & Tags ngang -->
+            <div class="mt-5 max-w-2xl mx-auto space-y-2.5">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-lavender/60 text-xs"></i>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Tìm theo tên nhân vật, người tạo, thể loại..." 
+                        class="w-full pl-9 pr-3 py-2 bg-night-card border border-night-border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-lavender transition text-xs"
+                    >
+                </div>
+
+                <div class="flex items-center gap-1.5 overflow-x-auto py-1 px-1 tag-scrollbar" id="tagFilters"></div>
+            </div>
+        </section>
+
+        <!-- Danh sách nhân vật (Centered Grid) -->
+        <main class="py-4 flex-1 w-full">
+            <div id="characterContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5"></div>
+
+            <div id="emptyView" class="hidden text-center py-12">
+                <i class="fa-regular fa-compass text-3xl text-lavender/40 mb-2"></i>
+                <p class="text-slate-400 text-xs">Không tìm thấy nhân vật nào phù hợp!</p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-night-border/70 py-4 text-center text-xs text-slate-500 mt-auto">
+            <p>© RAU MUỐNG • Giao diện Tím Oải Hương & Đen Huyền Bí</p>
+        </footer>
+
+    </div>
+
+    <!-- Widget Nghe Nhạc Nhỏ Gọn (Góc Dưới Bên Trái) -->
+    <aside class="fixed bottom-3 left-3 z-40 bg-night-card/90 backdrop-blur-md border border-lavender/40 p-2 rounded-2xl shadow-xl flex items-center gap-2.5">
+        <div id="musicDisk" class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-800 to-lavender flex items-center justify-center text-white text-[11px] spin-music spin-paused shadow-md border border-white/20">
+            <i class="fa-solid fa-music"></i>
+        </div>
+        
+        <div class="hidden sm:block text-left pr-1 max-w-[130px]">
+            <p class="text-[11px] font-bold text-white truncate" id="bgmTitleDisplay">Nhạc Mặc Định</p>
+            <p class="text-[9px] text-lavender-light truncate" id="bgmStatusDisplay">Chạm để phát</p>
+        </div>
+
+        <div class="flex items-center gap-1">
+            <button onclick="toggleMusicPlayback()" id="btnPlayPause" class="w-7 h-7 rounded-lg bg-lavender/20 hover:bg-lavender text-lavender hover:text-white flex items-center justify-center text-xs transition">
+                <i class="fa-solid fa-play" id="playIcon"></i>
+            </button>
+            <button onclick="openMusicManagerModal()" title="Danh sách nhạc & Đổi nhạc" class="w-7 h-7 rounded-lg bg-night-border hover:bg-night-border/80 text-slate-300 hover:text-white flex items-center justify-center text-xs transition">
+                <i class="fa-solid fa-list-ul"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Nút Mở Phòng Chat Trong Suốt (Góc Dưới Bên Phải) -->
+    <button onclick="toggleChatRoomModal()" class="fixed bottom-3 right-3 z-40 px-3.5 py-2.5 rounded-full bg-lavender/30 hover:bg-lavender/50 border border-lavender/60 text-white text-xs font-bold shadow-2xl backdrop-blur-xl flex items-center gap-2 transition active:scale-95 group">
+        <i class="fa-solid fa-comments text-lavender-light group-hover:animate-bounce"></i>
+        <span>Phòng Chat</span>
+        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+    </button>
+
+    <!-- ==================== PHÒNG CHAT CỘNG ĐỒNG GIAO DIỆN TRONG SUỐT (GLASSMORPHISM) ==================== -->
+    <div id="chatRoomModal" class="fixed bottom-16 right-3 sm:right-6 w-[92vw] sm:w-96 max-h-[500px] h-[75vh] z-50 hidden flex flex-col rounded-3xl backdrop-blur-2xl bg-black/40 border border-lavender/50 shadow-2xl overflow-hidden transition-all duration-300">
+        <!-- Chat Header Trong Suốt -->
+        <div class="p-3.5 border-b border-white/10 bg-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-lavender/30 flex items-center justify-center text-lavender font-bold text-xs border border-lavender/40">
+                    💬
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-white leading-tight">Phòng Chat RAU MUỐNG</h4>
+                    <p class="text-[10px] text-lavender-light">Giao lưu & tương tác cộng đồng</p>
+                </div>
+            </div>
+            <button onclick="toggleChatRoomModal()" class="text-slate-400 hover:text-white text-sm p-1"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Khung Tin Nhắn -->
+        <div id="chatMessagesContainer" class="flex-1 p-3 overflow-y-auto space-y-2.5 text-xs">
+            <!-- Render tin nhắn chat bằng JS -->
+        </div>
+
+        <!-- Khung Nhập Tin Nhắn -->
+        <form onsubmit="handleSendChatMessage(event)" class="p-2.5 border-t border-white/10 bg-white/5 flex items-center gap-2">
+            <input type="text" id="chatInputMessage" required placeholder="Nhập tin nhắn giao lưu..." class="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-xl text-white text-xs placeholder-slate-400 focus:outline-none focus:border-lavender backdrop-blur-sm">
+            <button type="submit" class="w-9 h-9 rounded-xl bg-lavender hover:bg-lavender-glow text-white flex items-center justify-center text-xs transition shadow-md">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- ==================== MODAL BẢNG XẾP HẠNG (LEADERBOARD) ==================== -->
+    <div id="leaderboardModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-night-card border border-amber-400/40 p-5 sm:p-6 rounded-3xl max-w-md w-full shadow-2xl my-8 relative text-left">
+            <div class="flex items-center justify-between border-b border-night-border pb-3 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-400/30 flex items-center justify-center text-sm font-bold">
+                        🏆
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white leading-tight">Bảng Xếp Hạng Vinh Danh</h3>
+                        <p class="text-[10px] text-amber-200">Ghi nhận cống hiến & tương tác</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('leaderboardModal')" class="text-slate-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Tabs BXH -->
+            <div class="grid grid-cols-3 p-1 bg-black/50 border border-night-border rounded-xl mb-3.5 text-[11px] font-semibold text-center">
+                <button type="button" id="tabLdKiss" onclick="switchLeaderboardTab('kisses')" class="py-1 rounded-lg bg-lavender text-white">Hôn Nhiều</button>
+                <button type="button" id="tabLdPlay" onclick="switchLeaderboardTab('plays')" class="py-1 rounded-lg text-slate-400 hover:text-white">Chơi Nhiều</button>
+                <button type="button" id="tabLdActive" onclick="switchLeaderboardTab('active')" class="py-1 rounded-lg text-slate-400 hover:text-white">Sôi Nổi</button>
+            </div>
+
+            <!-- Danh sách thành viên Top -->
+            <div id="leaderboardListContainer" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
+
+            <div class="pt-3 border-t border-night-border/70 mt-3 text-center">
+                <p class="text-[10px] text-slate-400">✨ Hãy hôn nhân vật, đọc plot, comment và tương tác để vươn lên Top 1 nhé!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CỬA SỔ THÔNG BÁO TRƯỢT LÊN KHI MỚI VÀO WEB ==================== -->
+    <div id="announcementModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-4">
+        <div class="bg-night-card border border-lavender/60 p-6 rounded-3xl max-w-md w-full shadow-2xl relative text-center animate-slide-up overflow-hidden">
+            <div class="notice-petal text-base" style="left: 10%; bottom: 10px; animation-delay: 0s;">🌸</div>
+            <div class="notice-petal text-xs" style="left: 30%; bottom: 20px; animation-delay: 1.2s;">💜</div>
+            <div class="notice-petal text-sm" style="left: 80%; bottom: 5px; animation-delay: 0.6s;">🌸</div>
+            <div class="notice-petal text-xs" style="left: 90%; bottom: 15px; animation-delay: 2s;">✨</div>
+
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-lavender-dark to-lavender flex items-center justify-center mx-auto mb-3 shadow-lg shadow-purple-900/50 text-xl text-white">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+
+            <h3 class="text-xl font-bold font-title text-white mb-2" id="noticeDisplayTitle">Thông Báo Từ RAU MUỐNG</h3>
+            
+            <div class="bg-black/40 border border-night-border p-4 rounded-2xl text-xs text-slate-300 leading-relaxed text-left max-h-56 overflow-y-auto mb-4 whitespace-pre-line" id="noticeDisplayContent">
+                Chào mừng bạn đến với thế giới nhân vật RAU MUỐNG! Chúc bạn có những phút giây trải nghiệm tuyệt vời và tìm được nhân vật yêu thích của mình 🌸💜.
+            </div>
+
+            <button onclick="closeAnnouncementModal()" class="w-full py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-800 to-lavender hover:from-purple-700 hover:to-lavender-glow text-white shadow-lg transition">
+                Đã Hiểu & Khám Phá Ngay ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== CỬA SỔ ĐĂNG KÝ / ĐĂNG NHẬP (CÓ SET SINH NHẬT) ==================== -->
+    <div id="authGateModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-night-card border border-lavender/50 p-6 rounded-3xl max-w-sm w-full shadow-2xl relative text-center">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-lavender-dark to-lavender flex items-center justify-center mx-auto mb-2.5 shadow-lg shadow-purple-900/50 text-lg text-white">
+                <i class="fa-solid fa-seedling"></i>
+            </div>
+
+            <h3 class="text-xl font-bold font-title text-white mb-0.5">RAU MUỐNG Realm</h3>
+            <p class="text-xs text-slate-400 mb-3.5">Đăng nhập tài khoản của bạn để tiếp tục:</p>
+
+            <!-- Chuyển Tab Đăng Nhập / Đăng Ký -->
+            <div class="flex border-b border-night-border mb-4 text-xs font-bold">
+                <button type="button" id="tabAuthLogin" onclick="switchAuthTab('login')" class="w-1/2 pb-2 text-lavender border-b-2 border-lavender transition">
+                    Đăng Nhập
+                </button>
+                <button type="button" id="tabAuthRegister" onclick="switchAuthTab('register')" class="w-1/2 pb-2 text-slate-400 hover:text-white transition">
+                    Tạo Tài Khoản Mới
+                </button>
+            </div>
+
+            <!-- FORM 1: ĐĂNG NHẬP THÀNH VIÊN -->
+            <form id="formLogin" onsubmit="handleLoginSubmit(event)" class="space-y-3 text-left">
+                <div>
+                    <label class="text-xs font-semibold text-lavender-light block mb-1">Tên tài khoản:</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" id="loginUsername" required placeholder="Nhập tên tài khoản..." class="w-full pl-8 pr-3 py-2 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-lavender-light block mb-1">Mật khẩu:</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="password" id="loginPassword" required placeholder="Nhập mật khẩu..." class="w-full pl-8 pr-3 py-2 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                    </div>
+                </div>
+
+                <p id="loginErrorMsg" class="hidden text-[11px] text-red-400 text-center"></p>
+
+                <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-800 to-lavender hover:from-purple-700 hover:to-lavender-glow text-white shadow-lg transition">
+                    Đăng Nhập Vào Web
+                </button>
+            </form>
+
+            <!-- FORM 2: ĐĂNG KÝ (CÓ THÊM SINH NHẬT) -->
+            <form id="formRegister" onsubmit="handleRegisterSubmit(event)" class="hidden space-y-3 text-left">
+                <div>
+                    <label class="text-xs font-semibold text-lavender-light block mb-1">Tên muốn tạo *</label>
+                    <input type="text" id="regUsername" required placeholder="VD: Bông Hoa Tím..." class="w-full px-3 py-2 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-lavender-light block mb-1">Tạo mật khẩu *</label>
+                    <input type="password" id="regPassword" required placeholder="Mật khẩu của bạn..." class="w-full px-3 py-2 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs font-semibold text-lavender-light block mb-1">Giới tính</label>
+                        <select id="regGender" class="w-full px-2.5 py-2 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                            <option value="Khác">Khác</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-lavender-light block mb-1">Độ tuổi *</label>
+                        <input type="number" id="regAge" min="1" max="120" value="18" required class="w-full px-2.5 py-2 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                    </div>
+                </div>
+
+                <!-- Ô CHỌN NGÀY SINH NHẬT -->
+                <div>
+                    <label class="text-xs font-semibold text-lavender-light block mb-1">Ngày sinh nhật của bạn (🎂):</label>
+                    <input type="date" id="regBirthday" required class="w-full px-3 py-2 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                    <p class="text-[10px] text-slate-400 mt-0.5">Đến ngày sinh nhật, web sẽ chạy chữ chúc mừng bạn trên đầu trang!</p>
+                </div>
+
+                <p id="regErrorMsg" class="hidden text-[11px] text-red-400 text-center"></p>
+
+                <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold bg-lavender hover:bg-lavender-glow text-white shadow-lg transition">
+                    Đăng Ký & Vào Luôn
+                </button>
+            </form>
+
+            <!-- NÚT DÀNH RIÊNG CHO ADMIN -->
+            <div class="pt-3 border-t border-night-border/60 mt-3">
+                <button type="button" onclick="openAdminDirectModal()" class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-solid fa-crown text-amber-400 text-xs"></i>
+                    <span>Đăng nhập với tư cách Admin 👑</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CÁC MODAL KHÁC ==================== -->
+    <!-- MODAL DANH SÁCH BGM -->
+    <div id="musicManagerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-night-card border border-lavender/50 p-5 rounded-2xl max-w-md w-full shadow-2xl text-left relative">
+            <div class="flex items-center justify-between border-b border-night-border pb-2.5 mb-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-music text-lavender"></i> Danh Sách Nhạc Nền (BGM)
+                </h3>
+                <button onclick="closeModal('musicManagerModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-2 max-h-52 overflow-y-auto pr-1 mb-3" id="playlistContainer"></div>
+            <div class="flex justify-end">
+                <button onclick="closeModal('musicManagerModal')" class="px-4 py-1.5 rounded-xl text-xs bg-night-border text-slate-300 hover:text-white">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ĐỌC PLOT (CÓ NHẠC RIÊNG CỦA CHAR) -->
+    <div id="plotModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-night-card border border-lavender/50 p-5 sm:p-6 rounded-2xl max-w-xl w-full shadow-2xl my-8 relative text-left">
+            <div class="flex items-center justify-between border-b border-night-border pb-3 mb-3">
+                <div class="flex items-center gap-2.5">
+                    <img id="plotCharAvatar" src="" onerror="this.src='https://placehold.co/400x500/120d22/b57edc?text=Character'" class="w-10 h-10 rounded-xl object-contain bg-black/40 border border-lavender/50">
+                    <div>
+                        <h3 class="text-base font-bold text-white leading-tight" id="plotCharName">Tên nhân vật</h3>
+                        <p class="text-[11px] text-lavender-light" id="plotCharCreator">Tạo bởi: ...</p>
+                    </div>
+                </div>
+                <button onclick="closePlotModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div id="plotMusicBadge" class="hidden items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-900/30 border border-purple-500/40 text-lavender-light text-xs mb-3">
+                <i class="fa-solid fa-compact-disc spin-music text-lavender"></i>
+                <span id="plotMusicText">Đang phát nhạc chủ đề của nhân vật...</span>
+            </div>
+
+            <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-lavender-glow mb-1">📖 Bối Cảnh & Cốt Truyện (Plot):</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-black/40 p-3.5 rounded-xl border border-night-border" id="plotContentText"></p>
+                </div>
+                <div class="pt-1 flex justify-end">
+                    <button onclick="closePlotModal()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-lavender/20 hover:bg-lavender/30 text-lavender-light transition">
+                        Đóng cốt truyện
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LINK BL / BG -->
+    <div id="dualLinkModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-night-card border border-lavender/50 p-5 rounded-2xl max-w-sm w-full shadow-2xl text-center">
+            <div class="w-10 h-10 rounded-full bg-lavender/20 border border-lavender/40 text-lavender flex items-center justify-center mx-auto mb-2.5 text-base">
+                <i class="fa-solid fa-code-branch"></i>
+            </div>
+            <h4 class="text-sm font-bold text-white mb-1" id="dualLinkCharName">Chọn Chế Độ Trải Nghiệm</h4>
+            <p class="text-[11px] text-slate-400 mb-4">Nhân vật này hỗ trợ hai phiên bản câu chuyện riêng biệt:</p>
+            <div class="space-y-2.5">
+                <button id="btnSelectBG" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg transition active:scale-95">
+                    <i class="fa-solid fa-venus-mars"></i>
+                    <span>Bản BG (Boy x Girl)</span>
+                </button>
+                <button id="btnSelectBL" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg transition active:scale-95">
+                    <i class="fa-solid fa-mars-double"></i>
+                    <span>Bản BL (Boy x Boy)</span>
+                </button>
+            </div>
+            <button onclick="closeModal('dualLinkModal')" class="mt-3 text-[11px] text-slate-400 hover:text-white">
+                Để sau / Hủy
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL CẢNH BÁO 18+ -->
+    <div id="warning18Modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-night-card border border-red-500/50 p-5 rounded-2xl max-w-xs w-full shadow-2xl text-center">
+            <div class="w-10 h-10 bg-red-600/20 text-red-500 border border-red-500/40 rounded-full flex items-center justify-center mx-auto mb-2 text-base font-bold">
+                18+
+            </div>
+            <h4 class="text-sm font-bold text-white mb-1.5">Cảnh Báo Nội Dung</h4>
+            <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                Nhân vật này có chứa các yếu tố 18+ / nhạy cảm. <br>
+                <strong class="text-red-400">Bạn có chắc là đã trên 18 tuổi không?</strong>
+            </p>
+            <div class="flex gap-2">
+                <button onclick="closeModal('warning18Modal')" class="w-1/2 py-1.5 rounded-xl text-xs text-slate-400 bg-white/5">Hủy bỏ</button>
+                <button id="btnConfirm18" class="w-1/2 py-1.5 rounded-xl text-xs font-bold bg-red-600 text-white">Tôi Đã Trên 18</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HÒM THƯ ADMIN -->
+    <div id="mailboxModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-night-card border border-lavender/50 p-5 rounded-2xl max-w-md w-full shadow-2xl relative text-left">
+            <div class="flex items-center justify-between border-b border-night-border pb-2.5 mb-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-envelope text-lavender"></i> Hòm Thư Gửi Admin
+                </h3>
+                <button onclick="closeModal('mailboxModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleSendLetterToAdmin(event)" class="space-y-2.5">
+                <div>
+                    <label class="text-[11px] font-semibold text-lavender-light block mb-1">Mục đích thư:</label>
+                    <select id="letterType" class="w-full px-2.5 py-1.5 bg-black/60 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                        <option value="Động viên">💖 Lời động viên / Cổ vũ Admin</option>
+                        <option value="Góp ý">💡 Góp ý phát triển thêm nhân vật</option>
+                        <option value="Câu hỏi">❓ Đặt câu hỏi / Thắc mắc</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-semibold text-lavender-light block mb-1">Nội dung thư gửi *</label>
+                    <textarea id="letterContent" rows="3.5" required placeholder="Gửi những lời nhắn nhủ thân thương..." class="w-full px-2.5 py-1.5 bg-black/60 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button type="button" onclick="closeModal('mailboxModal')" class="px-3 py-1.5 rounded-xl text-xs text-slate-400">Hủy</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-lavender text-white">Gửi Thư</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL BÌNH LUẬN -->
+    <div id="feedbackModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-night-card border border-lavender/40 p-5 rounded-2xl max-w-lg w-full shadow-2xl my-8 relative text-left">
+            <div class="flex items-center justify-between border-b border-night-border pb-2.5 mb-3">
+                <div class="flex items-center gap-2.5">
+                    <img id="fbCharAvatar" src="" onerror="this.src='https://placehold.co/400x500/120d22/b57edc?text=Character'" class="w-9 h-9 rounded-xl object-contain bg-black/40 border border-lavender">
+                    <div>
+                        <h4 class="font-bold text-white text-xs leading-none" id="fbCharName">Tên nhân vật</h4>
+                        <p class="text-[10px] text-lavender-light mt-0.5">Nhận xét & Phản hồi</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('feedbackModal')" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleSubmitFeedback(event)" class="space-y-2 mb-4">
+                <div id="replyTargetIndicator" class="hidden text-[10px] bg-lavender/10 text-lavender px-2.5 py-0.5 rounded-lg border border-lavender/30 flex items-center justify-between">
+                    <span>Đang trả lời: <strong id="replyTargetAuthor">User</strong></span>
+                    <button type="button" onclick="cancelReply()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div>
+                    <textarea id="fbInputText" rows="2" required placeholder="Viết cảm nhận của bạn về nhân vật..." class="w-full px-2.5 py-1.5 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender"></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-lavender text-white flex items-center gap-1 shadow">
+                        <i class="fa-solid fa-paper-plane text-[9px]"></i>
+                        <span>Đăng Bình Luận</span>
+                    </button>
+                </div>
+            </form>
+            <div class="border-t border-night-border pt-2.5">
+                <h5 class="text-[11px] font-bold text-lavender-light mb-2.5 flex items-center justify-between">
+                    <span>Tất cả nhận xét</span>
+                    <span id="fbCountBadge" class="text-[10px] text-slate-400">0 nhận xét</span>
+                </h5>
+                <div id="feedbackList" class="space-y-2.5 max-h-56 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL XÁC THỰC MẬT KHẨU ADMIN (lhvvvvwvv__@09.) -->
+    <div id="loginModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-night-card border border-amber-500/50 p-6 rounded-3xl max-w-xs w-full shadow-2xl relative text-left">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center justify-center mx-auto mb-2 text-base font-bold">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <h3 class="text-base font-bold font-title text-white text-center mb-1">Xác Thực Admin</h3>
+            <p class="text-xs text-slate-400 text-center mb-3">Nhập mật khẩu bí mật của Quản Trị Viên</p>
+
+            <form onsubmit="handleAdminLogin(event)" class="space-y-2.5">
+                <input type="password" id="adminPassword" placeholder="Nhập mật khẩu Admin..." required class="w-full px-3 py-2 bg-black/60 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-amber-400">
+                <p id="adminPassError" class="hidden text-[10px] text-red-400 text-center">Sai mật khẩu Admin!</p>
+                <div class="flex justify-end gap-2 pt-1">
+                    <button type="button" onclick="closeModal('loginModal')" class="px-3 py-1.5 rounded-xl text-xs text-slate-400 bg-white/5">Đóng</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black">Vào Hệ Thống</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BẢNG ĐIỀU KHIỂN ADMIN (ADMIN PANEL) -->
+    <div id="adminModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-night-card border border-lavender/40 p-5 rounded-2xl max-w-2xl w-full shadow-2xl my-6 relative text-left">
+            <div class="flex items-center justify-between border-b border-night-border pb-2.5 mb-3">
+                <h3 class="text-base font-bold font-title text-white flex items-center gap-1.5">
+                    <i class="fa-solid fa-sparkles text-lavender"></i> Bảng Quản Trị RAU MUỐNG
+                </h3>
+                <button onclick="closeModal('adminModal')" class="text-slate-400 hover:text-white text-base"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="flex flex-wrap border-b border-night-border mb-3 gap-3 text-xs font-semibold">
+                <button type="button" onclick="switchAdminTab('create')" id="tabBtnCreate" class="pb-1.5 text-lavender border-b-2 border-lavender">Đăng Nhân Vật</button>
+                <button type="button" onclick="switchAdminTab('notice')" id="tabBtnNotice" class="pb-1.5 text-slate-400 hover:text-white">Thông Báo Web</button>
+                <button type="button" onclick="switchAdminTab('music')" id="tabBtnMusic" class="pb-1.5 text-slate-400 hover:text-white">Cập Nhật Nhạc</button>
+                <button type="button" onclick="switchAdminTab('letters')" id="tabBtnLetters" class="pb-1.5 text-slate-400 hover:text-white flex items-center gap-1">
+                    <span>Hòm Thư</span>
+                    <span id="unreadLetterCount" class="bg-purple-900 text-lavender-light px-1.5 rounded-full text-[9px]">0</span>
+                </button>
+                <button type="button" onclick="resetDefaultData()" class="pb-1.5 ml-auto text-red-400 hover:text-red-300 flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-left"></i> Khôi phục gốc
+                </button>
+            </div>
+
+            <!-- Tab 1: Đăng nhân vật -->
+            <div id="adminTabCreate">
+                <form onsubmit="handleCreateCharacter(event)" class="space-y-2.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="text-[11px] font-semibold text-lavender-light block mb-0.5">Tên nhân vật *</label>
+                            <input type="text" id="charName" placeholder="Tên nhân vật..." required class="w-full px-2.5 py-1.5 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-semibold text-lavender-light block mb-0.5">Tên người tạo *</label>
+                            <input type="text" id="charCreator" placeholder="VD: RAU MUỐNG..." required class="w-full px-2.5 py-1.5 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-lavender-light block mb-0.5">Link ảnh (cách nhau bằng dấu phẩy) *</label>
+                        <input type="text" id="charImage" placeholder="https://anh1.jpg, https://anh2.jpg..." required class="w-full px-2.5 py-1.5 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                    </div>
+
+                    <!-- Ô Set Nhạc Riêng Cho Nhân Vật -->
+                    <div>
+                        <label class="text-[11px] font-semibold text-lavender-light block mb-0.5">Link nhạc riêng của nhân vật (Tùy chọn: Catbox/MP3 - Tự động phát khi đọc Plot):</label>
+                        <input type="url" id="charSpecificMusic" placeholder="https://files.catbox.moe/... hoặc để trống" class="w-full px-2.5 py-1.5 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                    </div>
+
+                    <div class="p-2.5 bg-black/40 rounded-xl border border-night-border space-y-2">
+                        <label class="cursor-pointer flex items-center gap-2">
+                            <input type="checkbox" id="checkDualLinks" onchange="toggleDualLinkInputs(this.checked)" class="accent-purple-600 rounded">
+                            <span class="text-xs text-lavender font-semibold">Tách 2 link riêng biệt: Bản BL & Bản BG</span>
+                        </label>
+                        <div id="singleLinkSection">
+                            <label class="text-[11px] font-semibold text-slate-300 block mb-0.5">Link khi bấm chọn nhân vật *</label>
+                            <input type="url" id="charLink" placeholder="https://..." class="w-full px-2.5 py-1.5 bg-black/60 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                        </div>
+                        <div id="dualLinkSection" class="hidden grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[11px] font-semibold text-pink-300 block mb-0.5">Link Bản BG *</label>
+                                <input type="url" id="charLinkBG" placeholder="https://..." class="w-full px-2.5 py-1.5 bg-black/60 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-semibold text-purple-300 block mb-0.5">Link Bản BL *</label>
+                                <input type="url" id="charLinkBL" placeholder="https://..." class="w-full px-2.5 py-1.5 bg-black/60 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-lavender-light block mb-1">Tag có sẵn:</label>
+                        <div class="flex flex-wrap gap-1" id="presetTagsList"></div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-lavender-light block mb-0.5">Tag tự ghi (cách nhau dấu phẩy):</label>
+                        <input type="text" id="charCustomTags" placeholder="VD: Hắc Ám, Slowburn..." class="w-full px-2.5 py-1.5 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-lavender-light block mb-0.5">Mô tả ngắn *</label>
+                        <textarea id="charDesc" rows="1.5" placeholder="Tóm tắt tính cách, lời trích..." required class="w-full px-2.5 py-1.5 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-lavender-light block mb-0.5">Cốt truyện chi tiết (Plot) *</label>
+                        <textarea id="charPlot" rows="2.5" placeholder="Bối cảnh cốt truyện..." required class="w-full px-2.5 py-1.5 bg-black/50 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-1 border-t border-night-border">
+                        <button type="button" onclick="closeModal('adminModal')" class="px-3 py-1.5 rounded-xl text-xs text-slate-400">Hủy</button>
+                        <button type="submit" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-lavender text-white">Đăng Nhân Vật</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab 2: Quản lý thông báo -->
+            <div id="adminTabNotice" class="hidden space-y-3">
+                <form onsubmit="handleUpdateNotice(event)" class="bg-black/40 p-4 rounded-xl border border-night-border space-y-3">
+                    <h4 class="text-xs font-bold text-lavender-light">Cập Nhật Thông Báo Chào Mừng Cho Toàn Bộ User:</h4>
+                    <div>
+                        <label class="text-[11px] text-slate-300 block mb-1">Tiêu đề thông báo:</label>
+                        <input type="text" id="adminNoticeTitle" required placeholder="VD: Thông Báo Từ RAU MUỐNG..." class="w-full px-3 py-2 bg-black/60 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender">
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-slate-300 block mb-1">Nội dung thông báo (hỗ trợ xuống dòng):</label>
+                        <textarea id="adminNoticeContent" rows="4" required placeholder="Nhập nội dung cập nhật, sự kiện..." class="w-full px-3 py-2 bg-black/60 border border-night-border rounded-xl text-white text-xs focus:outline-none focus:border-lavender"></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold bg-lavender hover:bg-lavender-glow text-white shadow">
+                            Lưu & Áp Dụng Thông Báo Mới
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab 3: Quản lý nhạc BGM -->
+            <div id="adminTabMusic" class="hidden space-y-3">
+                <form onsubmit="handleAddNewMusic(event)" class="bg-black/40 p-3 rounded-xl border border-night-border space-y-2">
+                    <h4 class="text-xs font-bold text-lavender-light">Thêm Bài Nhạc Mới Vào Danh Sách BGM:</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="newMusicTitle" placeholder="Tên bài hát..." required class="px-2.5 py-1.5 bg-black/60 border border-night-border rounded-xl text-white text-xs">
+                        <input type="url" id="newMusicUrl" placeholder="Link .mp3 / catbox / youtube..." required class="px-2.5 py-1.5 bg-black/60 border border-night-border rounded-xl text-white text-xs">
+                    </div>
+                    <button type="submit" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-lavender text-white">Thêm Vào Playlist</button>
+                </form>
+                <div>
+                    <h4 class="text-xs font-bold text-white mb-2">Danh Sách Nhạc Hiện Có:</h4>
+                    <div id="adminPlaylistView" class="space-y-1.5 max-h-52 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Xem thư gửi về -->
+            <div id="adminTabLetters" class="hidden">
+                <div id="adminLettersList" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube Iframe API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <!-- ==================== LOGIC JAVASCRIPT ==================== -->
+    <script>
+        // MẬT KHẨU ADMIN CHÍNH XÁC: lhvvvvwvv__@09.
+        const ADMIN_PASSWORD_HASH = "lhvvvvwvv__@09.";
+
+        const DEFAULT_NOTICE = {
+            title: "Thông Báo Từ RAU MUỐNG",
+            content: "Chào mừng bạn đến với thế giới nhân vật RAU MUỐNG! Chúc bạn có những phút giây trải nghiệm tuyệt vời và tìm được nhân vật yêu thích của mình 🌸💜."
+        };
+
+        const DEFAULT_PLAYLIST = [
+            {
+                id: "bgm_1",
+                title: "BGM Catbox (Mặc Định)",
+                url: "https://files.catbox.moe/io1op0.mp3"
+            },
+            {
+                id: "bgm_2",
+                title: "BGM Oải Hương 2",
+                url: "https://youtu.be/cthtCRmTcgA"
+            }
+        ];
+
+        const PRESET_TAGS = [
+            "18+", "NSFW", "Hiện đại", "Xuyên không", "Học Đường", "Thanh Xuân", 
+            "Hào Môn", "Yakuza", "Tsundere", "Chiếm Hữu", "Lạnh lùng", "Redflag", 
+            "Mỏ hỗn", "⚡⚡⚡", "Tục", "BG", "BG / BL", "Slowburn", "Hệ thống", "3P"
+        ];
+
+        // DANH SÁCH NHÂN VẬT (VIEW, LIKE, KISSES BẮT ĐẦU TỪ 0)
+        const DEFAULT_CHARACTERS = [
+            {
+                id: "char_mac_nguy",
+                name: "Mạc Ngụy – .. ..M",
+                creator: "Admin bối rối",
+                gallery: [
+                    "https://i.ibb.co/YFjzVdJV/Kh-ng-C-Ti-u-1055-20260904133408.png",
+                    "https://i.ibb.co/27jmNjPJ/Kh-ng-C-Ti-u-1051-20260902160245.png",
+                    "https://i.ibb.co/J9XLvvt/Kh-ng-C-Ti-u-1049.png",
+                    "https://i.ibb.co/9HtL0Fd0/Kh-ng-C-Ti-u-1053-20260904131340.png",
+                    "https://i.ibb.co/mVLkksDv/Kh-ng-C-Ti-u-1053-20260904131322.png"
+                ],
+                description: "“Em dạy tôi cách yêu, còn cách quên em thì không.”",
+                plot: "“Em dạy tôi cách yêu, còn cách quên em thì không.”\n\nBối cảnh: Hiện đại kết hợp xuyên không & hệ thống. Bạn chính là bạch nguyệt quang duy nhất sưởi ấm tâm hồn lạnh lẽo của Mạc Ngụy. Sau đó vì nhiệm vụ, bạn buộc phải giả chết rời đi khiến hắn hoàn toàn phát điên. Plot twist tầng tầng lớp lớp đang chờ đợi bạn lật mở...",
+                tags: ["Hiện đại", "18+", "Xuyên không", "Lạnh lùng", "Slowburn", "Hệ thống", "BG", "Có plot twist", "3P", "user giả chết - char phát điên", "user bạch nguyệt quang"],
+                link: "https://aistudio.google.com/",
+                charBgm: "",
+                views: 0,
+                likes: 0,
+                kisses: 0
+            },
+            {
+                id: "char_manh_truong_vu",
+                name: "Mạnh Trường Vũ",
+                creator: "Admin what the fắc!?",
+                gallery: ["https://i.ibb.co/1fskRDxw/Kh-ng-C-Ti-u-1073-20260912001040.png"],
+                description: "Gửi nhầm clip ⚡ cho bạn thân.",
+                plot: "Mạnh Trường Vũ - gã võ sĩ MMA mỏ hỗn, tính tình cục súc, chuẩn redflag nhưng lại là bạn thân thanh mai trúc mã của bạn. Vào một đêm bốc đồng, hắn vô tình gửi nhầm một đoạn clip ⚡ cực kỳ nhạy cảm sang máy bạn. Và chỉ 10 phút sau, hắn đã đứng chắn trước cửa phòng bạn...",
+                tags: ["Anygender", "Hiện đại", "18+", "NSFW", "Redflag", "Mỏ hỗn", "⚡⚡⚡", "Tục", "Thanh mai trúc mã", "Võ sĩ MMA"],
+                link: "https://aistudio.google.com/",
+                charBgm: "",
+                views: 0,
+                likes: 0,
+                kisses: 0
+            },
+            {
+                id: "char_luu_lac_nhien",
+                name: "Lưu Lạc Nhiên",
+                creator: "Admin what the fắc!?",
+                gallery: ["https://i.ibb.co/1GjPTrJ0/Kh-ng-C-Ti-u-1059-20260907195930.png"],
+                description: "Bạo lực nhưng \"nhẹ nhàng\" với mỗi mình chị/anh.",
+                plot: "Con trai trùm Yakuza khét tiếng, mang hai dòng máu Nhật - Trung. Bạo lực, bất ổn, đẫm máu ngoài giang hồ nhưng khi đứng trước mặt bạn, hắn tình nguyện thu lại móng vuốt, chỉ muốn được 'nhẹ nhàng' với một mình bạn.",
+                tags: ["18+", "Yakuza", "Hắc Bang", "Bạo Lực", "BG / BL", "Tâm Lý"],
+                dualLinks: {
+                    bl: "https://aistudio.google.com/",
+                    bg: "https://aistudio.google.com/"
+                },
+                charBgm: "",
+                views: 0,
+                likes: 0,
+                kisses: 0
+            },
+            {
+                id: "char_luc_trieu_an",
+                name: "Lục Triều An",
+                creator: "RAU MUỐNG",
+                gallery: ["https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80"],
+                description: "Hot boy ngông nghênh nức tiếng toàn trường, xuất thân gia thế hiển hách. Mồm mép sắc xảo hay chê bai nhưng khi đã đổ thì cưng chiều hết mực.",
+                plot: "Lục Triều An - đại thiếu gia lừng lẫy của trường trung học trọng điểm. Hắn từng công khai buông lời chê bai bạn trước toàn trường, nhưng đằng sau vẻ ngông cuồng ấy là vô số lần âm thầm che ô chắn gió.",
+                tags: ["Thanh Xuân", "Học Đường", "Tsundere"],
+                link: "https://facebook.com",
+                charBgm: "",
+                views: 0,
+                likes: 0,
+                kisses: 0
+            },
+            {
+                id: "char_tong_canh_duong",
+                name: "Tống Cảnh Dương",
+                creator: "RAU MUỐNG",
+                gallery: ["https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80"],
+                description: "Thiếu gia hào môn quyền lực bậc nhất, tính tình lạnh lùng xa cách. Một cuộc hôn nhân ép buộc và những đêm tân hôn xa lạ.",
+                plot: "Cuộc liên hôn thương mại giữa bạn và người đứng đầu tập đoàn họ Tống. Hắn lạnh lùng, nghiêm cẩn cho đến khi sự ghen tuông độc chiếm trong hắn bị châm ngòi.",
+                tags: ["18+", "Hào Môn", "Ngược Sủng", "Lạnh Lùng"],
+                link: "https://facebook.com",
+                charBgm: "",
+                views: 0,
+                likes: 0,
+                kisses: 0
+            },
+            {
+                id: "char_kang_baek",
+                name: "Kang Si-woo & Baek Yang-deok",
+                creator: "RAU MUỐNG",
+                gallery: ["https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80"],
+                description: "Bộ đôi ăn ý nhưng đầy mâu thuẫn ngầm. Một người điềm đạm tính toán chu toàn, người kia bộc trực và luôn sẵn sàng lao vào nguy hiểm.",
+                plot: "Cặp bài trùng nguy hiểm tại khu phố buôn lậu Gangnam. Si-woo sắc sảo mưu lược, còn Yang-deok là nắm đấm tử thần, cả hai cùng để mắt tới một người.",
+                tags: ["Hàn Quốc", "Bộ Đôi", "Hành Động", "BG / BL"],
+                link: "https://facebook.com",
+                charBgm: "",
+                views: 0,
+                likes: 0,
+                kisses: 0
+            },
+            {
+                id: "char_to_so_yen",
+                name: "Tô Sở Yên",
+                creator: "RAU MUỐNG",
+                gallery: ["https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80"],
+                description: "Đại tiểu thư kiều diễm mang trái tim băng giá và khát khao báo thù mãnh liệt. Vừa quyến rũ chết người vừa đầy gai nhọn.",
+                plot: "Tô Sở Yên trở về sau biến cố diệt môn đầy bí ẩn. Đằng sau những bộ xiêm y lộng lẫy và nụ cười khuynh thành là một lưỡi dao sắc nhọn luôn chực chờ đoạt mạng kẻ thù.",
+                tags: ["Cổ Trang", "Hào Môn", "Ma Mị", "Ngược Sủng"],
+                link: "https://facebook.com",
+                charBgm: "",
+                views: 0,
+                likes: 0,
+                kisses: 0
+            },
+            {
+                id: "char_trac_mien_ly",
+                name: "Trạc Miên Ly",
+                creator: "RAU MUỐNG",
+                gallery: ["https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80"],
+                description: "Thiếu niên sát thủ mang ánh mắt vô hồn, trung thành tuyệt đối. Sẵn sàng nhuộm máu đôi bàn tay chỉ để đổi lấy một cái xoa đầu từ bạn.",
+                plot: "Trạc Miên Ly sinh ra không có tên, không có cảm xúc, chỉ được huấn luyện để làm công cụ sát nhân. Bạn là ánh sáng duy nhất cứu hắn khỏi vũng lầy hoang phế.",
+                tags: ["18+", "Hắc Ám", "Yandere", "Trung Thành"],
+                link: "https://facebook.com",
+                charBgm: "",
+                views: 0,
+                likes: 0,
+                kisses: 0
+            }
+        ];
+
+        // KHÓA LƯU TRỮ V14
+        const STORAGE_KEY = "raumuong_chars_v14";
+        const USER_STORAGE_KEY = "raumuong_user_v14";
+        const ACCOUNTS_STORAGE_KEY = "raumuong_accounts_v14";
+        const FEEDBACK_STORAGE_KEY = "raumuong_fb_v14";
+        const LETTERS_STORAGE_KEY = "raumuong_letters_v14";
+        const LIKES_STORAGE_KEY = "raumuong_likes_v14";
+        const PLAYLIST_STORAGE_KEY = "raumuong_playlist_v14";
+        const NOTICE_STORAGE_KEY = "raumuong_notice_v14";
+        const CHAT_STORAGE_KEY = "raumuong_livechat_v14";
+
+        let characterList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_CHARACTERS;
+        let currentUser = JSON.parse(localStorage.getItem(USER_STORAGE_KEY)) || null;
+        let registeredAccounts = JSON.parse(localStorage.getItem(ACCOUNTS_STORAGE_KEY)) || [];
+        let feedbackMap = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY)) || {};
+        let adminLetters = JSON.parse(localStorage.getItem(LETTERS_STORAGE_KEY)) || [];
+        let userLikes = JSON.parse(localStorage.getItem(LIKES_STORAGE_KEY)) || {};
+        let musicPlaylist = JSON.parse(localStorage.getItem(PLAYLIST_STORAGE_KEY)) || DEFAULT_PLAYLIST;
+        let currentNotice = JSON.parse(localStorage.getItem(NOTICE_STORAGE_KEY)) || DEFAULT_NOTICE;
+        let chatMessages = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY)) || [
+            { author: "Admin", text: "Chào mừng các bạn đến với Phòng Chat RAU MUỐNG! Chúc mọi người trò chuyện vui vẻ 🌸✨", time: "Hệ thống" }
+        ];
+
+        let currentSongIndex = 0;
+        let charActiveImageIndex = {};
+        let currentActiveFeedbackCharId = null;
+        let currentReplyParentId = null;
+        let isAdminLoggedIn = false;
+        let currentFilterTag = "Tất cả";
+        let currentSearchQuery = "";
+        let pending18Char = null;
+        let currentLeaderboardTab = "kisses";
+
+        let isMusicPlaying = false;
+        let ytPlayer = null;
+        let isYtReady = false;
+        let wasBgmPlayingBeforePlot = false;
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function isStrictlyForbiddenAdmin(name) {
+            if (!name) return false;
+            const clean = name.toLowerCase().replace(/[^a-z0-9à-ỹ]/g, '');
+            if (clean.includes('admin') || clean.includes('adm1n') || clean.includes('quantri') || clean.includes('administrator') || clean.includes('root') || clean.includes('hethong')) {
+                return true;
+            }
+            return false;
+        }
+
+        // =========================================================================
+        //  CẢM ỨNG CHẠM PHÁT SÁNG BÔNG TUYẾT & SÓNG NƯỚC
+        // =========================================================================
+        document.addEventListener('pointerdown', (e) => {
+            // Không kích hoạt ripple nếu click vào các nút bấm tương tác
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+            spawnClickParticleEffect(e.clientX, e.clientY);
+        }, true);
+
+        function spawnClickParticleEffect(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'touch-ripple';
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            ripple.style.width = '35px';
+            ripple.style.height = '35px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 500);
+
+            const icons = ['❄', '🌸', '✨', '💜'];
+            const count = 5;
+
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'touch-particle';
+                particle.innerText = icons[Math.floor(Math.random() * icons.length)];
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.fontSize = `${Math.floor(Math.random() * 6 + 12)}px`;
+
+                const angle = (Math.PI * 2 / count) * i + (Math.random() * 0.4 - 0.2);
+                const distance = Math.random() * 30 + 20;
+                const rotation = (Math.random() * 360 - 180) + 'deg';
+
+                particle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                particle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                particle.style.setProperty('--tr', rotation);
+
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 650);
+            }
+        }
+
+        // =========================================================================
+        //  CHỨC NĂNG HÔN CHAR ("CHỤT CHỤT" + BONG BÓNG NẨY NẨY + SPAM ĐƯỢC)
+        // =========================================================================
+        function handleKissCharacter(charId, e) {
+            e.stopPropagation();
+            if (!currentUser) return alert("Vui lòng đăng nhập để trao nụ hôn cho nhân vật!");
+
+            const char = characterList.find(c => c.id === charId);
+            if (!char) return;
+
+            // Tăng số lượt hôn của char
+            char.kisses = (char.kisses || 0) + 1;
+
+            // Cập nhật thống kê hôn của user
+            updateUserStat('kisses', 1);
+
+            // Cập nhật giao diện trực tiếp không cần load lại toàn bộ
+            const kissCountEl = document.getElementById(`kiss_count_${charId}`);
+            if (kissCountEl) kissCountEl.innerText = char.kisses;
+
+            // Tạo hiệu ứng bong bóng nụ hôn nảy nảy nảy tại chỗ chạm
+            const rect = e.currentTarget.getBoundingClientRect();
+            const posX = rect.left + rect.width / 2;
+            const posY = rect.top;
+            spawnKissBubbleEffect(posX, posY);
+
+            // Lưu dữ liệu
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(characterList));
+        }
+
+        function spawnKissBubbleEffect(x, y) {
+            const kissesIcons = ['💋', '🫧', '💖', '😘', '✨'];
+            for (let i = 0; i < 2; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'kiss-bubble';
+                bubble.innerText = kissesIcons[Math.floor(Math.random() * kissesIcons.length)];
+                bubble.style.left = `${x + (Math.random() * 24 - 12)}px`;
+                bubble.style.top = `${y + (Math.random() * 10 - 5)}px`;
+                document.body.appendChild(bubble);
+                setTimeout(() => bubble.remove(), 850);
+            }
+        }
+
+        function updateUserStat(statType, increment = 1) {
+            if (!currentUser) return;
+            if (!currentUser.stats) {
+                currentUser.stats = { plays: 0, kisses: 0, likes: 0, comments: 0 };
+            }
+            currentUser.stats[statType] = (currentUser.stats[statType] || 0) + increment;
+
+            // Cập nhật trong session
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
+
+            // Cập nhật trong danh sách tài khoản
+            const accIndex = registeredAccounts.findIndex(acc => acc.username.toLowerCase() === currentUser.username.toLowerCase());
+            if (accIndex !== -1) {
+                if (!registeredAccounts[accIndex].stats) {
+                    registeredAccounts[accIndex].stats = { plays: 0, kisses: 0, likes: 0, comments: 0 };
+                }
+                registeredAccounts[accIndex].stats[statType] = currentUser.stats[statType];
+                localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(registeredAccounts));
+            }
+        }
+
+        // =========================================================================
+        //  BẢNG XẾP HẠNG (LEADERBOARD: HÔN NHIỀU, CHƠI NHIỀU, SÔI NỔI)
+        // =========================================================================
+        function openLeaderboardModal() {
+            renderLeaderboard();
+            document.getElementById("leaderboardModal").classList.remove("hidden");
+        }
+
+        function switchLeaderboardTab(tab) {
+            currentLeaderboardTab = tab;
+            const tabKiss = document.getElementById("tabLdKiss");
+            const tabPlay = document.getElementById("tabLdPlay");
+            const tabActive = document.getElementById("tabLdActive");
+
+            tabKiss.className = "py-1 rounded-lg text-slate-400 hover:text-white";
+            tabPlay.className = "py-1 rounded-lg text-slate-400 hover:text-white";
+            tabActive.className = "py-1 rounded-lg text-slate-400 hover:text-white";
+
+            if (tab === 'kisses') tabKiss.className = "py-1 rounded-lg bg-lavender text-white font-bold";
+            else if (tab === 'plays') tabPlay.className = "py-1 rounded-lg bg-lavender text-white font-bold";
+            else tabActive.className = "py-1 rounded-lg bg-lavender text-white font-bold";
+
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const container = document.getElementById("leaderboardListContainer");
+
+            // Sao chép danh sách tài khoản để sắp xếp
+            let accounts = [...registeredAccounts];
+
+            // Đảm bảo các tài khoản đều có stats
+            accounts.forEach(acc => {
+                if (!acc.stats) acc.stats = { plays: 0, kisses: 0, likes: 0, comments: 0 };
+            });
+
+            // Tính toán xếp hạng theo từng tab
+            if (currentLeaderboardTab === 'kisses') {
+                accounts.sort((a, b) => (b.stats.kisses || 0) - (a.stats.kisses || 0));
+            } else if (currentLeaderboardTab === 'plays') {
+                accounts.sort((a, b) => (b.stats.plays || 0) - (a.stats.plays || 0));
+            } else {
+                // Sôi nổi: điểm = plays * 2 + kisses + likes * 3 + comments * 5
+                accounts.sort((a, b) => {
+                    const scoreA = (a.stats.plays || 0) * 2 + (a.stats.kisses || 0) + (a.stats.likes || 0) * 3 + (a.stats.comments || 0) * 5;
+                    const scoreB = (b.stats.plays || 0) * 2 + (b.stats.kisses || 0) + (b.stats.likes || 0) * 3 + (b.stats.comments || 0) * 5;
+                    return scoreB - scoreA;
+                });
+            }
+
+            if (accounts.length === 0) {
+                container.innerHTML = `<p class="text-center py-6 text-xs text-slate-500 italic">Chưa có dữ liệu thành viên tham gia.</p>`;
+                return;
+            }
+
+            container.innerHTML = accounts.slice(0, 10).map((acc, index) => {
+                let rankBadge = `<span class="w-6 h-6 rounded-full bg-white/10 text-slate-400 font-bold flex items-center justify-center text-xs">${index + 1}</span>`;
+                if (index === 0) rankBadge = `<span class="w-6 h-6 rounded-full bg-amber-500 text-black font-extrabold flex items-center justify-center text-xs shadow-md shadow-amber-500/50">👑 1</span>`;
+                else if (index === 1) rankBadge = `<span class="w-6 h-6 rounded-full bg-slate-300 text-black font-extrabold flex items-center justify-center text-xs">🥈 2</span>`;
+                else if (index === 2) rankBadge = `<span class="w-6 h-6 rounded-full bg-amber-700 text-white font-extrabold flex items-center justify-center text-xs">🥉 3</span>`;
+
+                let valueDisplay = "";
+                if (currentLeaderboardTab === 'kisses') {
+                    valueDisplay = `<span class="text-xs font-bold text-pink-300">${acc.stats.kisses || 0} 💋</span>`;
+                } else if (currentLeaderboardTab === 'plays') {
+                    valueDisplay = `<span class="text-xs font-bold text-lavender-light">${acc.stats.plays || 0} lượt chơi</span>`;
+                } else {
+                    const score = (acc.stats.plays || 0) * 2 + (acc.stats.kisses || 0) + (acc.stats.likes || 0) * 3 + (acc.stats.comments || 0) * 5;
+                    valueDisplay = `<span class="text-xs font-bold text-amber-300">${score} 🔥</span>`;
+                }
+
+                return `
+                <div class="p-2.5 rounded-2xl flex items-center justify-between border transition ${index === 0 ? 'bg-amber-500/10 border-amber-400/40' : 'bg-black/30 border-night-border'}">
+                    <div class="flex items-center gap-2.5">
+                        ${rankBadge}
+                        <div class="text-left">
+                            <p class="font-bold text-white text-xs leading-none">${escapeHtml(acc.username)}</p>
+                            <p class="text-[9px] text-slate-400 mt-0.5">${acc.role === 'admin' ? 'Quản Trị' : `${acc.age || 18} tuổi`}</p>
+                        </div>
+                    </div>
+                    <div>
+                        ${valueDisplay}
+                    </div>
+                </div>
+                `;
+            }).join("");
+        }
+
+        // =========================================================================
+        //  PHÒNG CHAT CỘNG ĐỒNG GIAO DIỆN TRONG SUỐT (LIVE CHAT)
+        // =========================================================================
+        function toggleChatRoomModal() {
+            const chatModal = document.getElementById("chatRoomModal");
+            if (chatModal.classList.contains("hidden")) {
+                chatModal.classList.remove("hidden");
+                renderChatMessages();
+            } else {
+                chatModal.classList.add("hidden");
+            }
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById("chatMessagesContainer");
+            container.innerHTML = chatMessages.map(msg => {
+                const isMe = currentUser && currentUser.username === msg.author;
+                const isAdmin = msg.author.toLowerCase() === 'admin';
+
+                return `
+                <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                    <div class="flex items-center gap-1.5 mb-0.5">
+                        <span class="text-[10px] font-bold ${isAdmin ? 'text-amber-400' : 'text-lavender-light'}">${escapeHtml(msg.author)}</span>
+                        <span class="text-[8px] text-slate-400">${msg.time}</span>
+                    </div>
+                    <div class="px-3 py-1.5 rounded-2xl max-w-[85%] break-words ${isMe ? 'bg-lavender/30 border border-lavender/40 text-white' : 'bg-black/50 border border-white/10 text-slate-200'} backdrop-blur-md">
+                        ${escapeHtml(msg.text)}
+                    </div>
+                </div>
+                `;
+            }).join("");
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function handleSendChatMessage(e) {
+            e.preventDefault();
+            if (!currentUser) return alert("Vui lòng đăng nhập để tham gia phòng chat!");
+
+            const input = document.getElementById("chatInputMessage");
+            const text = input.value.trim();
+            if (!text) return;
+
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${now.getMinutes() < 10 ? '0' : ''}${now.getMinutes()}`;
+
+            chatMessages.push({
+                author: currentUser.username,
+                text: text,
+                time: timeStr
+            });
+
+            // Giới hạn 80 tin nhắn gần nhất
+            if (chatMessages.length > 80) chatMessages.shift();
+
+            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatMessages));
+            input.value = "";
+            renderChatMessages();
+
+            // Tăng điểm hoạt động sôi nổi cho user
+            updateUserStat('comments', 1);
+        }
+
+        // Đồng bộ tin nhắn giữa các tab mở cùng lúc
+        window.addEventListener('storage', (e) => {
+            if (e.key === CHAT_STORAGE_KEY) {
+                chatMessages = JSON.parse(e.newValue) || [];
+                renderChatMessages();
+            }
+        });
+
+        // =========================================================================
+        //  KIỂM TRA SINH NHẬT & HIỆN MARQUEE VINH DANH
+        // =========================================================================
+        function checkUserBirthday() {
+            const marqueeBar = document.getElementById("birthdayMarqueeBar");
+            if (!currentUser || !currentUser.birthday) {
+                marqueeBar.classList.add("hidden");
+                return;
+            }
+
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentDay = now.getDate();
+
+            // Birthday có dạng YYYY-MM-DD
+            const bParts = currentUser.birthday.split("-");
+            if (bParts.length === 3) {
+                const bMonth = parseInt(bParts[1], 10);
+                const bDay = parseInt(bParts[2], 10);
+
+                if (currentMonth === bMonth && currentDay === bDay) {
+                    marqueeBar.classList.remove("hidden");
+                    const wishText = `🎉 CHÚC MỪNG SINH NHẬT ${currentUser.username.toUpperCase()}! 🎂`;
+                    document.getElementById("birthdayMarqueeText").innerText = wishText;
+                    document.getElementById("birthdayMarqueeText2").innerText = wishText;
+                    return;
+                }
+            }
+            marqueeBar.classList.add("hidden");
+        }
+
+        // =========================================================================
+        //  THÔNG BÁO CHÀO MỪNG TRƯỢT LÊN
+        // =========================================================================
+        function showWelcomeAnnouncement() {
+            document.getElementById("noticeDisplayTitle").innerText = currentNotice.title || DEFAULT_NOTICE.title;
+            document.getElementById("noticeDisplayContent").innerText = currentNotice.content || DEFAULT_NOTICE.content;
+            document.getElementById("announcementModal").classList.remove("hidden");
+        }
+
+        function closeAnnouncementModal() {
+            document.getElementById("announcementModal").classList.add("hidden");
+            if (!currentUser) {
+                document.getElementById("authGateModal").classList.remove("hidden");
+            }
+        }
+
+        function handleUpdateNotice(e) {
+            e.preventDefault();
+            const title = document.getElementById("adminNoticeTitle").value.trim();
+            const content = document.getElementById("adminNoticeContent").value.trim();
+
+            if (!title || !content) return;
+
+            currentNotice = { title, content };
+            localStorage.setItem(NOTICE_STORAGE_KEY, JSON.stringify(currentNotice));
+            alert("Đã lưu thông báo mới thành công! User sẽ thấy thông báo này khi vào web.");
+        }
+
+        // =========================================================================
+        //  ĐĂNG KÝ / ĐĂNG NHẬP
+        // =========================================================================
+        function switchAuthTab(tab) {
+            const formLogin = document.getElementById("formLogin");
+            const formRegister = document.getElementById("formRegister");
+            const tabLogin = document.getElementById("tabAuthLogin");
+            const tabRegister = document.getElementById("tabAuthRegister");
+
+            document.getElementById("loginErrorMsg").classList.add("hidden");
+            document.getElementById("regErrorMsg").classList.add("hidden");
+
+            if (tab === 'login') {
+                formLogin.classList.remove("hidden");
+                formRegister.classList.add("hidden");
+                tabLogin.className = "w-1/2 pb-2 text-lavender border-b-2 border-lavender transition";
+                tabRegister.className = "w-1/2 pb-2 text-slate-400 hover:text-white transition";
+            } else {
+                formLogin.classList.add("hidden");
+                formRegister.classList.remove("hidden");
+                tabRegister.className = "w-1/2 pb-2 text-lavender border-b-2 border-lavender transition";
+                tabLogin.className = "w-1/2 pb-2 text-slate-400 hover:text-white transition";
+            }
+        }
+
+        function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById("regUsername").value.trim();
+            const password = document.getElementById("regPassword").value;
+            const gender = document.getElementById("regGender").value;
+            const age = parseInt(document.getElementById("regAge").value) || 18;
+            const birthday = document.getElementById("regBirthday").value;
+            const errorMsg = document.getElementById("regErrorMsg");
+
+            if (!username || !password) {
+                errorMsg.innerText = "Vui lòng điền đủ tên và mật khẩu!";
+                errorMsg.classList.remove("hidden");
+                return;
+            }
+
+            if (isStrictlyForbiddenAdmin(username)) {
+                errorMsg.innerText = "Tên này thuộc quyền Quản Trị Viên (Admin), nghiêm cấm đặt tên này!";
+                errorMsg.classList.remove("hidden");
+                return;
+            }
+
+            const existing = registeredAccounts.find(acc => acc.username.toLowerCase() === username.toLowerCase());
+            if (existing) {
+                errorMsg.innerText = "Tên tài khoản này đã tồn tại! Hãy chuyển qua Đăng Nhập.";
+                errorMsg.classList.remove("hidden");
+                return;
+            }
+
+            const newAccount = {
+                username,
+                password,
+                gender,
+                age,
+                birthday,
+                role: "user",
+                stats: { plays: 0, kisses: 0, likes: 0, comments: 0 }
+            };
+
+            registeredAccounts.push(newAccount);
+            localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(registeredAccounts));
+
+            currentUser = newAccount;
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
+
+            checkUserAuth();
+            checkUserBirthday();
+            alert(`🎉 Đã tạo thành công tài khoản "${username}"!\nTài khoản đã được tự động lưu vào trang web.`);
+            if (!isMusicPlaying) toggleMusicPlayback();
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById("loginUsername").value.trim();
+            const password = document.getElementById("loginPassword").value;
+            const errorMsg = document.getElementById("loginErrorMsg");
+
+            if (username.toLowerCase() === "admin" && password === ADMIN_PASSWORD_HASH) {
+                loginSuccessAsAdmin();
+                return;
+            }
+
+            const account = registeredAccounts.find(acc => acc.username.toLowerCase() === username.toLowerCase() && acc.password === password);
+
+            if (account) {
+                currentUser = account;
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
+                checkUserAuth();
+                checkUserBirthday();
+                if (!isMusicPlaying) toggleMusicPlayback();
+            } else {
+                errorMsg.innerText = "Sai tên hoặc mật khẩu! Nếu chưa có tài khoản, hãy chuyển qua tab 'Tạo Tài Khoản'.";
+                errorMsg.classList.remove("hidden");
+            }
+        }
+
+        function openAdminDirectModal() {
+            document.getElementById("adminPassword").value = "";
+            document.getElementById("adminPassError").classList.add("hidden");
+            document.getElementById("loginModal").classList.remove("hidden");
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const pass = document.getElementById("adminPassword").value;
+            const err = document.getElementById("adminPassError");
+
+            if (pass === ADMIN_PASSWORD_HASH) {
+                closeModal("loginModal");
+                loginSuccessAsAdmin();
+                openAdminPortal();
+            } else {
+                err.classList.remove("hidden");
+            }
+        }
+
+        function loginSuccessAsAdmin() {
+            currentUser = {
+                username: "Admin",
+                gender: "Admin",
+                age: 999,
+                role: "admin",
+                stats: { plays: 0, kisses: 0, likes: 0, comments: 0 }
+            };
+            isAdminLoggedIn = true;
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
+            checkUserAuth();
+            alert("👑 Đăng nhập với quyền Admin thành công!");
+            if (!isMusicPlaying) toggleMusicPlayback();
+        }
+
+        function checkUserAuth() {
+            const authModal = document.getElementById("authGateModal");
+            const headerBadge = document.getElementById("userHeaderBadge");
+
+            if (!currentUser) {
+                headerBadge.classList.add("hidden");
+            } else {
+                isAdminLoggedIn = (currentUser.role === 'admin' || currentUser.username === 'Admin');
+                authModal.classList.add("hidden");
+                headerBadge.classList.remove("hidden");
+                headerBadge.classList.add("flex");
+
+                document.getElementById("userDisplayName").innerText = currentUser.username;
+                document.getElementById("userAgeBadge").innerText = currentUser.role === 'admin' ? 'Quản Trị' : `${currentUser.age} tuổi`;
+                document.getElementById("userAvatarText").innerText = currentUser.username.charAt(0).toUpperCase();
+
+                renderFilterTags();
+                renderCharacters();
+                checkUserBirthday();
+            }
+        }
+
+        function logoutUser() {
+            if (confirm("Đăng xuất khỏi tài khoản?")) {
+                localStorage.removeItem(USER_STORAGE_KEY);
+                currentUser = null;
+                isAdminLoggedIn = false;
+                switchAuthTab('login');
+                checkUserAuth();
+                checkUserBirthday();
+                document.getElementById("authGateModal").classList.remove("hidden");
+            }
+        }
+
+        // =========================================================================
+        //  BGM AUDIO CHUNG & NHẠC RIÊNG CỦA CHAR
+        // =========================================================================
+        function extractYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function onYouTubeIframeAPIReady() {
+            isYtReady = true;
+        }
+
+        function playCurrentSong() {
+            const song = musicPlaylist[currentSongIndex];
+            if (!song) return;
+
+            document.getElementById("bgmTitleDisplay").innerText = song.title;
+            const ytId = extractYouTubeId(song.url);
+            const htmlAudio = document.getElementById("htmlAudioPlayer");
+
+            if (ytId) {
+                htmlAudio.pause();
+                if (ytPlayer && ytPlayer.loadVideoById) {
+                    ytPlayer.loadVideoById(ytId);
+                    if (isMusicPlaying) ytPlayer.playVideo();
+                } else if (isYtReady) {
+                    ytPlayer = new YT.Player('ytAudioContainer', {
+                        height: '0',
+                        width: '0',
+                        videoId: ytId,
+                        events: {
+                            'onReady': () => { if (isMusicPlaying) ytPlayer.playVideo(); },
+                            'onStateChange': (e) => {
+                                if (e.data === YT.PlayerState.PLAYING) setMusicUI(true);
+                                else if (e.data === YT.PlayerState.PAUSED) setMusicUI(false);
+                            }
+                        }
+                    });
+                }
+            } else {
+                if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+                htmlAudio.src = song.url;
+                if (isMusicPlaying) {
+                    htmlAudio.play().catch(() => { setMusicUI(false); });
+                }
+            }
+            setMusicUI(isMusicPlaying);
+        }
+
+        function toggleMusicPlayback() {
+            isMusicPlaying = !isMusicPlaying;
+            const song = musicPlaylist[currentSongIndex];
+            const ytId = extractYouTubeId(song ? song.url : "");
+            const htmlAudio = document.getElementById("htmlAudioPlayer");
+
+            if (ytId && ytPlayer && ytPlayer.playVideo) {
+                if (isMusicPlaying) ytPlayer.playVideo();
+                else ytPlayer.pauseVideo();
+            } else {
+                if (isMusicPlaying) {
+                    if (!htmlAudio.src || htmlAudio.src === window.location.href) {
+                        htmlAudio.src = song.url;
+                    }
+                    htmlAudio.play().catch(() => {
+                        isMusicPlaying = false;
+                        setMusicUI(false);
+                    });
+                } else {
+                    htmlAudio.pause();
+                }
+            }
+            setMusicUI(isMusicPlaying);
+        }
+
+        function setMusicUI(playing) {
+            const disk = document.getElementById("musicDisk");
+            const playIcon = document.getElementById("playIcon");
+            const statusText = document.getElementById("bgmStatusDisplay");
+
+            if (playing) {
+                disk.classList.remove("spin-paused");
+                playIcon.className = "fa-solid fa-pause";
+                statusText.innerText = "Đang phát 🎵";
+            } else {
+                disk.classList.add("spin-paused");
+                playIcon.className = "fa-solid fa-play";
+                statusText.innerText = "Đã tạm dừng";
+            }
+        }
+
+        function openMusicManagerModal() {
+            renderPlaylistView();
+            document.getElementById("musicManagerModal").classList.remove("hidden");
+        }
+
+        function renderPlaylistView() {
+            const container = document.getElementById("playlistContainer");
+            container.innerHTML = musicPlaylist.map((song, idx) => `
+                <div onclick="selectSongIndex(${idx})" class="p-2 rounded-xl flex items-center justify-between cursor-pointer border transition text-xs ${idx === currentSongIndex ? 'bg-lavender/20 border-lavender text-white font-bold' : 'bg-black/30 border-night-border text-slate-300 hover:border-lavender/50'}">
+                    <span class="truncate flex-1">${idx + 1}. ${escapeHtml(song.title)}</span>
+                    ${idx === currentSongIndex ? '<i class="fa-solid fa-volume-high text-lavender ml-2"></i>' : ''}
+                </div>
+            `).join("");
+        }
+
+        function selectSongIndex(idx) {
+            currentSongIndex = idx;
+            isMusicPlaying = true;
+            playCurrentSong();
+            renderPlaylistView();
+            closeModal("musicManagerModal");
+        }
+
+        function handleAddNewMusic(e) {
+            e.preventDefault();
+            const title = document.getElementById("newMusicTitle").value.trim();
+            const url = document.getElementById("newMusicUrl").value.trim();
+            if (!title || !url) return;
+
+            musicPlaylist.push({ id: "bgm_" + Date.now(), title, url });
+            localStorage.setItem(PLAYLIST_STORAGE_KEY, JSON.stringify(musicPlaylist));
+            e.target.reset();
+            renderAdminPlaylistView();
+            alert(`Đã thêm bài "${title}" vào playlist!`);
+        }
+
+        function renderAdminPlaylistView() {
+            const container = document.getElementById("adminPlaylistView");
+            container.innerHTML = musicPlaylist.map((s, idx) => `
+                <div class="p-2 bg-black/40 border border-night-border rounded-lg flex items-center justify-between text-xs">
+                    <span class="truncate font-semibold text-slate-200">${escapeHtml(s.title)}</span>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="selectSongIndex(${idx})" class="text-lavender hover:underline text-[11px]">Phát ngay</button>
+                        ${musicPlaylist.length > 1 ? `
+                            <button type="button" onclick="deleteSongFromPlaylist(${idx})" class="text-slate-500 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function deleteSongFromPlaylist(idx) {
+            if (confirm("Xóa bài nhạc này?")) {
+                musicPlaylist.splice(idx, 1);
+                if (currentSongIndex >= musicPlaylist.length) currentSongIndex = 0;
+                localStorage.setItem(PLAYLIST_STORAGE_KEY, JSON.stringify(musicPlaylist));
+                renderAdminPlaylistView();
+            }
+        }
+
+        // =========================================================================
+        //  RENDER CARDS (TIM BÊN PHẢI + NÚT CHỤT CHỤT HÔN CHAR)
+        // =========================================================================
+        function getVisibleCharacters() {
+            if (!currentUser) return [];
+            const isUnder18 = currentUser.age < 18;
+
+            return characterList.filter(char => {
+                if (isUnder18) {
+                    const is18 = (char.tags || []).some(t => {
+                        const low = t.toLowerCase();
+                        return low === '18+' || low === 'r18' || low === 'nsfw';
+                    });
+                    if (is18) return false;
+                }
+                return true;
+            });
+        }
+
+        function renderFilterTags() {
+            const visible = getVisibleCharacters();
+            const allAvailableTags = ["Tất cả", ...new Set(visible.flatMap(c => c.tags || []))];
+            
+            if (!allAvailableTags.includes(currentFilterTag)) {
+                currentFilterTag = "Tất cả";
+            }
+
+            const filterContainer = document.getElementById("tagFilters");
+            filterContainer.innerHTML = allAvailableTags.map(tag => {
+                const isActive = tag === currentFilterTag;
+                return `
+                    <button 
+                        onclick="setFilterTag('${tag}')"
+                        class="px-2.5 py-1 rounded-full text-[11px] whitespace-nowrap transition duration-200 shrink-0 ${
+                            isActive 
+                            ? 'bg-lavender text-white font-bold shadow-md shadow-lavender/30' 
+                            : 'bg-night-card text-slate-300 border border-night-border hover:border-lavender/50 hover:text-white'
+                        }">
+                        #${escapeHtml(tag)}
+                    </button>
+                `;
+            }).join("");
+        }
+
+        function renderCharacters() {
+            const container = document.getElementById("characterContainer");
+            const emptyView = document.getElementById("emptyView");
+            const visibleChars = getVisibleCharacters();
+
+            const filtered = visibleChars.filter(char => {
+                const matchTag = currentFilterTag === "Tất cả" || (char.tags && char.tags.includes(currentFilterTag));
+                const q = currentSearchQuery.toLowerCase();
+                const matchQuery = char.name.toLowerCase().includes(q) || 
+                                   (char.creator && char.creator.toLowerCase().includes(q)) ||
+                                   (char.description && char.description.toLowerCase().includes(q)) ||
+                                   (char.tags && char.tags.some(t => t.toLowerCase().includes(q)));
+                return matchTag && matchQuery;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = "";
+                emptyView.classList.remove("hidden");
+                return;
+            }
+
+            emptyView.classList.add("hidden");
+            container.innerHTML = filtered.map(char => {
+                const charFeedbacks = feedbackMap[char.id] || [];
+                const is18 = (char.tags || []).some(t => {
+                    const low = t.toLowerCase();
+                    return low === "18+" || low === "nsfw" || low === "r18";
+                });
+                
+                const likeKey = `${currentUser ? currentUser.username : 'guest'}_${char.id}`;
+                const isLiked = userLikes[likeKey] === true;
+
+                const gallery = char.gallery || [char.image || ""];
+                if (charActiveImageIndex[char.id] === undefined) {
+                    charActiveImageIndex[char.id] = 0;
+                }
+                const activeImgIdx = charActiveImageIndex[char.id] % gallery.length;
+                const currentImgSrc = gallery[activeImgIdx];
+                const hasMultipleImgs = gallery.length > 1;
+
+                return `
+                <div class="card-custom bg-night-card border border-night-border rounded-2xl overflow-hidden flex flex-col sm:flex-row h-full relative group">
+                    
+                    ${isAdminLoggedIn ? `
+                        <button onclick="deleteCharacter('${char.id}')" title="Xóa nhân vật" class="absolute top-2 right-2 z-30 w-6 h-6 bg-red-600/80 hover:bg-red-600 text-white rounded-lg flex items-center justify-center text-[10px] transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    ` : ''}
+
+                    <div class="sm:w-2/5 w-full flex items-center justify-center bg-black/40 overflow-hidden relative p-1 shrink-0 min-h-[220px]">
+                        <img 
+                            id="img_${char.id}"
+                            src="${escapeHtml(currentImgSrc)}" 
+                            alt="${escapeHtml(char.name)}" 
+                            onerror="this.src='https://placehold.co/400x500/120d22/b57edc?text=RAU+MUONG'"
+                            class="w-full h-auto max-h-[360px] object-contain rounded-xl transition duration-300"
+                            loading="lazy"
+                        >
+
+                        ${is18 ? `<span class="absolute top-2.5 left-2.5 bg-red-600 text-white font-black text-[9px] px-1.5 py-0.5 rounded shadow z-10">18+</span>` : ''}
+
+                        ${hasMultipleImgs ? `
+                            <button onclick="changeCardImage('${char.id}', -1)" class="absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/70 hover:bg-lavender text-white flex items-center justify-center text-[11px] transition shadow z-20">
+                                ‹
+                            </button>
+                            <button onclick="changeCardImage('${char.id}', 1)" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/70 hover:bg-lavender text-white flex items-center justify-center text-[11px] transition shadow z-20">
+                                ›
+                            </button>
+                            <span id="counter_${char.id}" class="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur text-purple-200 text-[9px] font-bold px-1.5 py-0.5 rounded border border-white/10 z-10">
+                                ${activeImgIdx + 1}/${gallery.length}
+                            </span>
+                        ` : ''}
+
+                        <!-- LƯỢT XEM Ở GÓC TRÁI DƯỚI -->
+                        <div class="absolute bottom-2 left-2 flex items-center gap-1.5 z-10">
+                            <span class="text-[10px] bg-black/70 backdrop-blur text-slate-300 px-1.5 py-0.5 rounded flex items-center gap-1 border border-white/10">
+                                <i class="fa-regular fa-eye text-lavender-glow text-[9px]"></i>
+                                <span>${char.views || 0}</span>
+                            </span>
+                        </div>
+
+                        <!-- PHẦN TIM BỰ HƠN, Ở BÊN PHẢI DƯỚI -->
+                        <div class="absolute bottom-2 right-2 flex items-center z-10">
+                            <button onclick="toggleLikeCharacter('${char.id}')" title="Thả tim" class="px-2.5 py-1 rounded-xl bg-black/75 backdrop-blur border border-white/20 hover:border-rose-400 flex items-center gap-1.5 transition-all duration-200 active:scale-125 shadow-lg ${isLiked ? 'text-rose-400 font-bold border-rose-500/60 shadow-rose-950' : 'text-slate-300 hover:text-rose-400'}">
+                                <i class="${isLiked ? 'fa-solid text-rose-500' : 'fa-regular'} fa-heart text-sm"></i>
+                                <span class="text-xs font-bold">${char.likes || 0}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-4 sm:w-3/5 w-full flex flex-col justify-between flex-1">
+                        <div>
+                            <div class="flex flex-wrap gap-1 mb-1.5 max-h-16 overflow-hidden">
+                                ${(char.tags || []).map(t => {
+                                    const isRed = t === '18+' || t === 'NSFW' || t === 'Redflag' || t === '⚡⚡⚡';
+                                    return `
+                                        <span class="text-[9px] font-semibold ${isRed ? 'text-red-400 bg-red-950/40 border border-red-500/50' : 'text-lavender-light bg-lavender/15 border border-lavender/30'} px-1.5 py-0.2 rounded">
+                                            #${escapeHtml(t)}
+                                        </span>
+                                    `;
+                                }).join("")}
+                            </div>
+
+                            <h3 class="text-base font-bold text-white group-hover:text-lavender transition line-clamp-1">
+                                ${escapeHtml(char.name)}
+                            </h3>
+
+                            <p class="text-[10px] text-lavender-glow/90 flex items-center gap-1 mt-0.5 mb-1.5">
+                                <i class="fa-solid fa-feather-pointed text-[9px]"></i>
+                                <span>Tạo bởi: <strong>${escapeHtml(char.creator || 'Ẩn danh')}</strong></span>
+                            </p>
+
+                            <p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-2.5">
+                                ${escapeHtml(char.description)}
+                            </p>
+                        </div>
+
+                        <div class="pt-1.5 mt-auto space-y-1.5">
+                            <!-- HÀNG NÚT: BÌNH LUẬN & CHỤT CHỤT (HÔN CHAR SPAM ĐƯỢC) -->
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <button 
+                                    onclick="openFeedbackModal('${char.id}')"
+                                    class="py-1 px-2 rounded-lg bg-white/5 hover:bg-white/10 border border-night-border text-slate-300 hover:text-white text-[11px] flex items-center justify-between transition"
+                                >
+                                    <span class="flex items-center gap-1">
+                                        <i class="fa-regular fa-comment-dots text-lavender text-xs"></i>
+                                        <span>Bình luận</span>
+                                    </span>
+                                    <span class="text-[10px] text-lavender-light bg-lavender/20 px-1.5 rounded-full font-semibold">
+                                        ${charFeedbacks.length}
+                                    </span>
+                                </button>
+
+                                <!-- Nút Chụt chụt (Hôn nhân vật, spam liên tục) -->
+                                <button 
+                                    onclick="handleKissCharacter('${char.id}', event)"
+                                    title="Bấm liên tục để hôn nhân vật!"
+                                    class="py-1 px-2 rounded-lg bg-pink-900/30 hover:bg-pink-900/60 border border-pink-500/40 text-pink-300 hover:text-white text-[11px] flex items-center justify-between transition active:scale-95 shadow-sm"
+                                >
+                                    <span class="flex items-center gap-1">
+                                        <span>💋 Chụt chụt</span>
+                                    </span>
+                                    <span id="kiss_count_${char.id}" class="text-[10px] bg-pink-500/30 px-1.5 rounded-full font-bold text-pink-200">
+                                        ${char.kisses || 0}
+                                    </span>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-5 gap-1.5">
+                                <button 
+                                    onclick="openPlotModal('${char.id}')"
+                                    class="col-span-2 py-1.5 px-2 rounded-xl bg-night-border/70 hover:bg-night-border border border-lavender/30 hover:border-lavender text-lavender-light text-[11px] font-semibold flex items-center justify-center gap-1 transition"
+                                >
+                                    <i class="fa-solid fa-book-open text-[10px]"></i>
+                                    <span>Đọc Plot</span>
+                                </button>
+
+                                <button 
+                                    onclick="handleSelectCharacter('${char.id}')"
+                                    class="col-span-3 py-1.5 px-2 rounded-xl bg-gradient-to-r from-purple-800 via-lavender to-purple-700 hover:from-purple-700 hover:to-lavender-glow text-white text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 shadow-md transition active:scale-95"
+                                >
+                                    <span>Chọn Char</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                `;
+            }).join("");
+        }
+
+        function changeCardImage(charId, step) {
+            const char = characterList.find(c => c.id === charId);
+            if (!char || !char.gallery) return;
+
+            const total = char.gallery.length;
+            charActiveImageIndex[charId] = (charActiveImageIndex[charId] + step + total) % total;
+
+            const imgEl = document.getElementById(`img_${charId}`);
+            const counterEl = document.getElementById(`counter_${charId}`);
+
+            if (imgEl) imgEl.src = char.gallery[charActiveImageIndex[charId]];
+            if (counterEl) counterEl.innerText = `${charActiveImageIndex[charId] + 1}/${total}`;
+        }
+
+        function setFilterTag(tag) {
+            currentFilterTag = tag;
+            renderFilterTags();
+            renderCharacters();
+        }
+
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            currentSearchQuery = e.target.value;
+            renderCharacters();
+        });
+
+        function handleSelectCharacter(charId) {
+            const char = characterList.find(c => c.id === charId);
+            if (!char) return;
+
+            // Ghi nhận lượt chơi nhân vật của user
+            updateUserStat('plays', 1);
+
+            const is18 = (char.tags || []).some(t => {
+                const low = t.toLowerCase();
+                return low === "18+" || low === "nsfw" || low === "r18";
+            });
+
+            if (is18) {
+                pending18Char = char;
+                document.getElementById("warning18Modal").classList.remove("hidden");
+            } else {
+                proceedCharacterSelection(char);
+            }
+        }
+
+        document.getElementById("btnConfirm18").addEventListener("click", () => {
+            closeModal("warning18Modal");
+            if (pending18Char) {
+                proceedCharacterSelection(pending18Char);
+                pending18Char = null;
+            }
+        });
+
+        function proceedCharacterSelection(char) {
+            if (char.dualLinks && (char.dualLinks.bg || char.dualLinks.bl)) {
+                document.getElementById("dualLinkCharName").innerText = char.name;
+
+                document.getElementById("btnSelectBG").onclick = () => {
+                    incrementCharView(char.id);
+                    closeModal("dualLinkModal");
+                    if (char.dualLinks.bg) window.open(char.dualLinks.bg, "_blank");
+                };
+
+                document.getElementById("btnSelectBL").onclick = () => {
+                    incrementCharView(char.id);
+                    closeModal("dualLinkModal");
+                    if (char.dualLinks.bl) window.open(char.dualLinks.bl, "_blank");
+                };
+
+                document.getElementById("dualLinkModal").classList.remove("hidden");
+            } else {
+                incrementCharView(char.id);
+                if (char.link) window.open(char.link, "_blank");
+                else alert("Nhân vật này hiện chưa có link!");
+            }
+        }
+
+        function incrementCharView(charId) {
+            const char = characterList.find(c => c.id === charId);
+            if (char) {
+                char.views = (char.views || 0) + 1;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(characterList));
+                renderCharacters();
+            }
+        }
+
+        function toggleLikeCharacter(charId) {
+            if (!currentUser) return alert("Vui lòng đăng nhập để thả tim!");
+
+            const char = characterList.find(c => c.id === charId);
+            if (!char) return;
+
+            const likeKey = `${currentUser.username}_${charId}`;
+
+            if (userLikes[likeKey]) {
+                delete userLikes[likeKey];
+                char.likes = Math.max(0, (char.likes || 1) - 1);
+            } else {
+                userLikes[likeKey] = true;
+                char.likes = (char.likes || 0) + 1;
+                // Tăng điểm thả tim cho user
+                updateUserStat('likes', 1);
+            }
+
+            localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(userLikes));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(characterList));
+            renderCharacters();
+        }
+
+        function openPlotModal(charId) {
+            const char = characterList.find(c => c.id === charId);
+            if (!char) return;
+
+            const gallery = char.gallery || [char.image || ""];
+            document.getElementById("plotCharAvatar").src = gallery[0];
+            document.getElementById("plotCharName").innerText = char.name;
+            document.getElementById("plotCharCreator").innerText = `Tạo bởi: ${char.creator || 'Ẩn danh'}`;
+            document.getElementById("plotContentText").innerText = char.plot || char.description;
+
+            const plotMusicBadge = document.getElementById("plotMusicBadge");
+            const charAudioPlayer = document.getElementById("charPlotAudioPlayer");
+            const htmlAudio = document.getElementById("htmlAudioPlayer");
+
+            if (char.charBgm && char.charBgm.trim().length > 0) {
+                plotMusicBadge.classList.remove("hidden");
+                plotMusicBadge.classList.add("flex");
+
+                wasBgmPlayingBeforePlot = isMusicPlaying;
+                if (isMusicPlaying) {
+                    htmlAudio.pause();
+                    if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+                    setMusicUI(false);
+                }
+
+                charAudioPlayer.src = char.charBgm.trim();
+                charAudioPlayer.play().catch(() => {});
+            } else {
+                plotMusicBadge.classList.add("hidden");
+            }
+
+            document.getElementById("plotModal").classList.remove("hidden");
+        }
+
+        function closePlotModal() {
+            closeModal("plotModal");
+            const charAudioPlayer = document.getElementById("charPlotAudioPlayer");
+            charAudioPlayer.pause();
+            charAudioPlayer.currentTime = 0;
+
+            if (wasBgmPlayingBeforePlot) {
+                isMusicPlaying = true;
+                playCurrentSong();
+                wasBgmPlayingBeforePlot = false;
+            }
+        }
+
+        // =========================================================================
+        //  BÌNH LUẬN
+        // =========================================================================
+        function openFeedbackModal(charId) {
+            currentActiveFeedbackCharId = charId;
+            cancelReply();
+
+            const char = characterList.find(c => c.id === charId);
+            if (!char) return;
+
+            const gallery = char.gallery || [char.image || ""];
+            document.getElementById("fbCharAvatar").src = gallery[0];
+            document.getElementById("fbCharName").innerText = char.name;
+            document.getElementById("fbInputText").value = "";
+
+            renderFeedbackList(charId);
+            document.getElementById("feedbackModal").classList.remove("hidden");
+        }
+
+        function setReplyTarget(commentId, authorName) {
+            currentReplyParentId = commentId;
+            document.getElementById("replyTargetAuthor").innerText = authorName;
+            document.getElementById("replyTargetIndicator").classList.remove("hidden");
+            document.getElementById("fbInputText").focus();
+        }
+
+        function cancelReply() {
+            currentReplyParentId = null;
+            document.getElementById("replyTargetIndicator").classList.add("hidden");
+        }
+
+        function getDetailedTimeString() {
+            const now = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} - ${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
+        }
+
+        function renderFeedbackList(charId) {
+            const listContainer = document.getElementById("feedbackList");
+            const countBadge = document.getElementById("fbCountBadge");
+            const feedbacks = feedbackMap[charId] || [];
+
+            countBadge.innerText = `${feedbacks.length} nhận xét`;
+
+            if (feedbacks.length === 0) {
+                listContainer.innerHTML = `<p class="text-center py-5 text-[11px] text-slate-500 italic">Chưa có bình luận nào.</p>`;
+                return;
+            }
+
+            listContainer.innerHTML = feedbacks.map(item => {
+                const canDelete = (currentUser && currentUser.username === item.author) || isAdminLoggedIn;
+
+                return `
+                <div class="bg-black/40 border border-night-border p-2.5 rounded-xl space-y-1.5">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-5 h-5 rounded-full bg-lavender/20 border border-lavender/50 text-[10px] font-bold text-lavender flex items-center justify-center">
+                                ${escapeHtml(item.author.charAt(0).toUpperCase())}
+                            </div>
+                            <div>
+                                <span class="font-bold text-white text-xs">${escapeHtml(item.author)}</span>
+                                <span class="text-[9px] text-slate-500 ml-1">${escapeHtml(item.time)}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="setReplyTarget('${item.id}', '${escapeHtml(item.author)}')" class="text-[10px] text-lavender hover:underline">Trả lời</button>
+                            ${canDelete ? `
+                                <button onclick="deleteComment('${charId}', '${item.id}')" class="text-slate-500 hover:text-red-400 text-xs" title="Xóa bình luận"><i class="fa-solid fa-trash"></i></button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-300 pl-6 leading-relaxed">${escapeHtml(item.content)}</p>
+
+                    ${(item.replies && item.replies.length > 0) ? `
+                        <div class="pl-6 pt-1.5 space-y-1.5 border-t border-night-border/50">
+                            ${item.replies.map(rep => {
+                                const canDeleteRep = (currentUser && currentUser.username === rep.author) || isAdminLoggedIn;
+                                return `
+                                    <div class="bg-white/5 p-1.5 rounded-lg text-xs space-y-0.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-semibold text-lavender-light text-[10px]">${escapeHtml(rep.author)}</span>
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-[8px] text-slate-500">${escapeHtml(rep.time)}</span>
+                                                ${canDeleteRep ? `<button onclick="deleteReply('${charId}', '${item.id}', '${rep.id}')" class="text-slate-500 hover:text-red-400 text-[9px]"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                            </div>
+                                        </div>
+                                        <p class="text-slate-300 text-[11px]">${escapeHtml(rep.content)}</p>
+                                    </div>
+                                `;
+                            }).join("")}
+                        </div>
+                    ` : ''}
+
+                </div>
+                `;
+            }).join("");
+        }
+
+        function handleSubmitFeedback(e) {
+            e.preventDefault();
+            if (!currentUser) return alert("Vui lòng đăng nhập trước!");
+
+            const text = document.getElementById("fbInputText").value.trim();
+            if (!text || !currentActiveFeedbackCharId) return;
+
+            if (!feedbackMap[currentActiveFeedbackCharId]) {
+                feedbackMap[currentActiveFeedbackCharId] = [];
+            }
+
+            const timeString = getDetailedTimeString();
+
+            if (currentReplyParentId) {
+                const parent = feedbackMap[currentActiveFeedbackCharId].find(c => c.id === currentReplyParentId);
+                if (parent) {
+                    if (!parent.replies) parent.replies = [];
+                    parent.replies.push({ id: "rep_" + Date.now(), author: currentUser.username, content: text, time: timeString });
+                }
+                cancelReply();
+            } else {
+                feedbackMap[currentActiveFeedbackCharId].unshift({
+                    id: "cmt_" + Date.now(),
+                    author: currentUser.username,
+                    gender: currentUser.gender || "Chưa rõ",
+                    age: currentUser.age || 18,
+                    content: text,
+                    time: timeString,
+                    replies: []
+                });
+            }
+
+            localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackMap));
+            document.getElementById("fbInputText").value = "";
+            renderFeedbackList(currentActiveFeedbackCharId);
+            renderCharacters();
+
+            // Tăng điểm hoạt động sôi nổi
+            updateUserStat('comments', 1);
+        }
+
+        function deleteComment(charId, commentId) {
+            if (confirm("Xóa bình luận này?")) {
+                feedbackMap[charId] = (feedbackMap[charId] || []).filter(c => c.id !== commentId);
+                localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackMap));
+                renderFeedbackList(charId);
+                renderCharacters();
+            }
+        }
+
+        function deleteReply(charId, commentId, replyId) {
+            if (confirm("Xóa phản hồi này?")) {
+                const parent = (feedbackMap[charId] || []).find(c => c.id === commentId);
+                if (parent && parent.replies) {
+                    parent.replies = parent.replies.filter(r => r.id !== replyId);
+                    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackMap));
+                    renderFeedbackList(charId);
+                }
+            }
+        }
+
+        // HÒM THƯ ADMIN
+        function openMailboxModal() {
+            if (!currentUser) return alert("Vui lòng đăng nhập trước!");
+            document.getElementById("mailboxModal").classList.remove("hidden");
+        }
+
+        function handleSendLetterToAdmin(e) {
+            e.preventDefault();
+            const type = document.getElementById("letterType").value;
+            const content = document.getElementById("letterContent").value.trim();
+
+            if (!content) return;
+
+            adminLetters.unshift({
+                id: "letter_" + Date.now(),
+                sender: currentUser.username,
+                senderAge: currentUser.age || 18,
+                type,
+                content,
+                time: getDetailedTimeString()
+            });
+
+            localStorage.setItem(LETTERS_STORAGE_KEY, JSON.stringify(adminLetters));
+            alert("Thư của bạn đã được chuyển tới Admin RAU MUỐNG! 💖");
+            document.getElementById("letterContent").value = "";
+            closeModal("mailboxModal");
+            updateAdminLetterBadge();
+        }
+
+        function updateAdminLetterBadge() {
+            const badge = document.getElementById("unreadLetterCount");
+            if (badge) badge.innerText = adminLetters.length;
+        }
+
+        function openAdminPortal() {
+            if (isAdminLoggedIn) {
+                renderAdminLetters();
+                renderAdminPlaylistView();
+                updateAdminLetterBadge();
+                document.getElementById("adminNoticeTitle").value = currentNotice.title || "";
+                document.getElementById("adminNoticeContent").value = currentNotice.content || "";
+                document.getElementById("adminModal").classList.remove("hidden");
+            } else {
+                openAdminDirectModal();
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add("hidden");
+        }
+
+        function switchAdminTab(tab) {
+            document.getElementById("adminTabCreate").classList.add("hidden");
+            document.getElementById("adminTabNotice").classList.add("hidden");
+            document.getElementById("adminTabMusic").classList.add("hidden");
+            document.getElementById("adminTabLetters").classList.add("hidden");
+
+            document.getElementById("tabBtnCreate").className = "pb-1.5 text-slate-400 hover:text-white";
+            document.getElementById("tabBtnNotice").className = "pb-1.5 text-slate-400 hover:text-white";
+            document.getElementById("tabBtnMusic").className = "pb-1.5 text-slate-400 hover:text-white";
+            document.getElementById("tabBtnLetters").className = "pb-1.5 text-slate-400 hover:text-white flex items-center gap-1";
+
+            if (tab === 'create') {
+                document.getElementById("adminTabCreate").classList.remove("hidden");
+                document.getElementById("tabBtnCreate").className = "pb-1.5 text-lavender border-b-2 border-lavender";
+            } else if (tab === 'notice') {
+                document.getElementById("adminTabNotice").classList.remove("hidden");
+                document.getElementById("tabBtnNotice").className = "pb-1.5 text-lavender border-b-2 border-lavender";
+            } else if (tab === 'music') {
+                document.getElementById("adminTabMusic").classList.remove("hidden");
+                document.getElementById("tabBtnMusic").className = "pb-1.5 text-lavender border-b-2 border-lavender";
+                renderAdminPlaylistView();
+            } else {
+                document.getElementById("adminTabLetters").classList.remove("hidden");
+                document.getElementById("tabBtnLetters").className = "pb-1.5 text-lavender border-b-2 border-lavender flex items-center gap-1";
+                renderAdminLetters();
+            }
+        }
+
+        function toggleDualLinkInputs(hasDual) {
+            if (hasDual) {
+                document.getElementById("singleLinkSection").classList.add("hidden");
+                document.getElementById("dualLinkSection").classList.remove("hidden");
+            } else {
+                document.getElementById("singleLinkSection").classList.remove("hidden");
+                document.getElementById("dualLinkSection").classList.add("hidden");
+            }
+        }
+
+        function handleCreateCharacter(e) {
+            e.preventDefault();
+            const name = document.getElementById("charName").value.trim();
+            const creator = document.getElementById("charCreator").value.trim();
+            const imagesInput = document.getElementById("charImage").value.trim();
+            const charBgm = document.getElementById("charSpecificMusic").value.trim();
+            const desc = document.getElementById("charDesc").value.trim();
+            const plot = document.getElementById("charPlot").value.trim();
+            const hasDual = document.getElementById("checkDualLinks").checked;
+
+            const gallery = imagesInput.split(",").map(url => url.trim()).filter(url => url.length > 0);
+
+            const checked = Array.from(document.querySelectorAll(".preset-tag-checkbox:checked")).map(cb => cb.value);
+            const custom = document.getElementById("charCustomTags").value.split(",").map(t => t.trim()).filter(t => t.length > 0);
+            const finalTags = [...new Set([...checked, ...custom])];
+            if (finalTags.length === 0) finalTags.push("Khác");
+
+            let newChar = {
+                id: "char_" + Date.now(),
+                name,
+                creator,
+                gallery,
+                image: gallery[0] || "",
+                description: desc,
+                plot: plot || desc,
+                tags: finalTags,
+                charBgm: charBgm,
+                views: 0,
+                likes: 0,
+                kisses: 0
+            };
+
+            if (hasDual) {
+                const linkBG = document.getElementById("charLinkBG").value.trim();
+                const linkBL = document.getElementById("charLinkBL").value.trim();
+                newChar.dualLinks = { bg: linkBG, bl: linkBL };
+            } else {
+                newChar.link = document.getElementById("charLink").value.trim();
+            }
+
+            characterList.unshift(newChar);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(characterList));
+
+            e.target.reset();
+            toggleDualLinkInputs(false);
+            closeModal("adminModal");
+            renderFilterTags();
+            renderCharacters();
+            alert(`Đã đăng thành công nhân vật: "${name}"!`);
+        }
+
+        function deleteCharacter(id) {
+            if (confirm("Xóa nhân vật này khỏi RAU MUỐNG?")) {
+                characterList = characterList.filter(c => c.id !== id);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(characterList));
+                renderFilterTags();
+                renderCharacters();
+            }
+        }
+
+        function renderAdminLetters() {
+            const list = document.getElementById("adminLettersList");
+            if (adminLetters.length === 0) {
+                list.innerHTML = `<p class="text-center py-6 text-xs text-slate-500 italic">Chưa có thư nào được gửi tới.</p>`;
+                return;
+            }
+
+            list.innerHTML = adminLetters.map(l => `
+                <div class="bg-black/50 border border-night-border p-3 rounded-xl space-y-1 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-lavender-light">[${escapeHtml(l.type)}] từ ${escapeHtml(l.sender)} (${l.senderAge}t)</span>
+                        <span class="text-[9px] text-slate-500">${escapeHtml(l.time)}</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed pt-1">${escapeHtml(l.content)}</p>
+                </div>
+            `).join("");
+        }
+
+        function renderPresetTagCheckboxes() {
+            const container = document.getElementById("presetTagsList");
+            container.innerHTML = PRESET_TAGS.map(tag => {
+                const isRed = tag === "18+" || tag === "NSFW" || tag === "Redflag" || tag === "⚡⚡⚡";
+                return `
+                    <label class="cursor-pointer select-none text-[10px] bg-black/40 border border-night-border hover:border-lavender px-2 py-0.5 rounded-md flex items-center gap-1 transition">
+                        <input type="checkbox" value="${tag}" class="preset-tag-checkbox accent-purple-600 rounded">
+                        <span class="${isRed ? 'text-red-400 font-bold' : 'text-slate-300'}">${tag}</span>
+                    </label>
+                `;
+            }).join("");
+        }
+
+        function resetDefaultData() {
+            if (confirm("Khôi phục toàn bộ danh sách nhân vật, nhạc, chat và thông báo về gốc? (Like, View & Kisses về 0)")) {
+                characterList = [...DEFAULT_CHARACTERS];
+                musicPlaylist = [...DEFAULT_PLAYLIST];
+                currentNotice = { ...DEFAULT_NOTICE };
+                userLikes = {};
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(characterList));
+                localStorage.setItem(PLAYLIST_STORAGE_KEY, JSON.stringify(musicPlaylist));
+                localStorage.setItem(NOTICE_STORAGE_KEY, JSON.stringify(currentNotice));
+                localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(userLikes));
+                renderFilterTags();
+                renderCharacters();
+                renderAdminPlaylistView();
+                alert("Đã khôi phục dữ liệu gốc thành công!");
+            }
+        }
+
+        // CANVAS HIỆU ỨNG TUYẾT & HOA OẢI HƯƠNG
+        const canvas = document.getElementById('fxCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        for (let i = 0; i < 55; i++) {
+            particles.push({
+                type: Math.random() > 0.4 ? 'lavender' : 'snow',
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 2.2 + 1,
+                speedY: Math.random() * 0.7 + 0.4,
+                speedX: Math.random() * 0.8 - 0.4,
+                angle: Math.random() * Math.PI * 2,
+                spin: Math.random() * 0.02 - 0.01,
+                opacity: Math.random() * 0.5 + 0.3
+            });
+        }
+
+        function drawLavenderPetal(x, y, radius, angle, opacity) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(181, 126, 220, ${opacity})`;
+            ctx.ellipse(0, 0, radius * 1.6, radius * 3.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawSnowflake(x, y, radius, opacity) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.7})`;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function animateFX() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.y += p.speedY;
+                p.x += Math.sin(p.angle) * 0.5 + p.speedX;
+                p.angle += p.spin;
+
+                if (p.y > height + 20) { p.y = -20; p.x = Math.random() * width; }
+                if (p.x > width + 20) p.x = -20;
+                if (p.x < -20) p.x = width + 20;
+
+                if (p.type === 'lavender') drawLavenderPetal(p.x, p.y, p.radius, p.angle, p.opacity);
+                else drawSnowflake(p.x, p.y, p.radius, p.opacity);
+            });
+            requestAnimationFrame(animateFX);
+        }
+
+        window.addEventListener('click', function unlockAudio() {
+            const htmlAudio = document.getElementById("htmlAudioPlayer");
+            if (!isMusicPlaying && htmlAudio && (!htmlAudio.src || htmlAudio.src === window.location.href)) {
+                htmlAudio.src = musicPlaylist[currentSongIndex]?.url || "";
+            }
+            window.removeEventListener('click', unlockAudio);
+        }, { once: true });
+
+        // KHỞI ĐỘNG HỆ THỐNG
+        renderPresetTagCheckboxes();
+        checkUserAuth();
+        updateAdminLetterBadge();
+        playCurrentSong();
+        animateFX();
+        showWelcomeAnnouncement();
+    </script>
+</body>
+</html>
